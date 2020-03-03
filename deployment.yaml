@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: anyservice-gke
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anyservice
+  template:
+    metadata:
+      labels:
+        app: anyservice
+    spec:
+      containers:
+        - name: anyservice-app
+          image: gcr.io/anyservice-269815/anyservice-gke:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"

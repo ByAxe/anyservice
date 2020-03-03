@@ -1,0 +1,12 @@
+apiVersion: skaffold/v2alpha3
+kind: Config
+metadata:
+  name: anyservice-gke
+build:
+  artifacts:
+  - image: gcr.io/anyservice-269815/anyservice-gke
+deploy:
+  kubectl:
+    manifests:
+    - deployment.yaml
+    - service.yaml

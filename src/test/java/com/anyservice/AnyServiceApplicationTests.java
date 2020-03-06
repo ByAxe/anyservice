@@ -1,4 +1,4 @@
-package com.example.helloworld;
+package com.anyservice;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -33,15 +33,15 @@ COMMENT ON COLUMN file_description.storage IS 'Описание местопол
 drop table if exists users cascade;
 create table if not exists users
 (
-    uuid                    uuid primary key,
-    dt_create               timestamptz not null default now(),
-    dt_update               timestamptz not null default now(),
-    description             text,
-    contacts                jsonb,
-    legal_status            varchar(50),
-    is_verified             boolean,
-    is_legal_status_verfied boolean,
-    profile_photo           uuid references file_description
+    uuid                     uuid primary key,
+    dt_create                timestamptz not null default now(),
+    dt_update                timestamptz not null default now(),
+    description              text,
+    contacts                 jsonb,
+    legal_status             varchar(50),
+    is_verified              boolean,
+    is_legal_status_verified boolean,
+    profile_photo            uuid references file_description
 );
 
 -- users_files

@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/anyservice_db
+    username: postgres
+    password: postgres
+    #    schema: anyservice
+    hikari:
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+      auto-commit: false
+      minimum-idle: 1
+      maximum-pool-size: 5
+      pool-name: anyservicePoolName
+    type: com.zaxxer.hikari.HikariDataSource
+  servlet:
+    multipart:
+      max-request-size: 20MB
+      max-file-size: 20MB
+#s3:
+#  enable: true
+#  type: amazon
+#  defaultStorage: http://192.168.192.12:9000
+#  storages:
+#    "[http://192.168.192.12:9000]":
+#      endpoint: http://192.168.192.12:9000
+#      access_key: KMG3ZZUZ57R2U85VTUJF
+#      secret_key: C3V6aGA1bOJEUbIRhnwwQisKlj1TTSUrhazou0Hq
+#      bucket: anyservice
+#      region: us-east-1
+#      maxUploadSize: 2147483647

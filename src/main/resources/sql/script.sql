@@ -3,7 +3,7 @@ CREATE DATABASE anyservice_db;
 \c anyservice_db
 
 DROP SCHEMA IF EXISTS anyservice CASCADE;
-create table if not exists anyservice;
+create schema if not exists anyservice;
 
 -- FILE_DESCRIPTION
 DROP TABLE IF EXISTS file_description;
@@ -36,9 +36,9 @@ create table if not exists users
     uuid                     uuid primary key,
     dt_create                timestamptz not null default now(),
     dt_update                timestamptz not null default now(),
-    user_name                varchar,
-    password
-                             description text,
+    user_name                varchar(50) not null,
+    password                 varchar     not null,
+    description              text,
     contacts                 jsonb,
     legal_status             varchar(50),
     is_verified              boolean,
@@ -51,10 +51,10 @@ DROP TABLE IF EXISTS users_files;
 CREATE TABLE users_files
 (
     uuid      UUID PRIMARY KEY,
-    user      UUID REFERENCES users (uuid)
+    user_uuid UUID REFERENCES users (uuid)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    file      UUID REFERENCES file_description (uuid)
+    file_uuid UUID REFERENCES file_description (uuid)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     dt_create TIMESTAMP WITHOUT TIME ZONE NOT NULL,
@@ -85,15 +85,15 @@ create table if not exists orders
 DROP TABLE IF EXISTS orders_files;
 CREATE TABLE orders_files
 (
-    uuid      UUID PRIMARY KEY,
-    order     UUID REFERENCES orders (uuid)
+    uuid       UUID PRIMARY KEY,
+    order_uuid UUID REFERENCES orders (uuid)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    file      UUID REFERENCES file_description (uuid)
+    file_uuid  UUID REFERENCES file_description (uuid)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    dt_create TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    dt_update TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    dt_create  TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    dt_update  TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 
 COMMENT ON TABLE orders_files IS 'Contains any additional materials for an order (videos and photos)';

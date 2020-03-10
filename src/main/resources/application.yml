@@ -31,3 +31,8 @@ spring:
 #      bucket: anyservice
 #      region: us-east-1
 #      maxUploadSize: 2147483647
+password:
+  rounds: 12
+  length:
+    min: 8
+    max: 50

@@ -1,12 +1,16 @@
 package com.anyservice.web.controller.api;
 
+import com.anyservice.dto.user.UserDetailed;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 public interface CRUDController<T, ID> {
-    ResponseEntity<?> save(T dto, UUID uuid);
+    ResponseEntity<?> create(UserDetailed dto);
+
+    ResponseEntity<?> update(UserDetailed dto, UUID uuid, Date version);
 
     ResponseEntity<?> findById(ID id);
 

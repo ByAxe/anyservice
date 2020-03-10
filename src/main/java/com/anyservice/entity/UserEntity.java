@@ -1,10 +1,7 @@
 package com.anyservice.entity;
 
 import com.anyservice.entity.api.EntityWithUUID;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
@@ -13,6 +10,7 @@ import javax.persistence.Table;
 import java.time.OffsetDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -40,4 +38,9 @@ public class UserEntity extends EntityWithUUID {
 
     @Column(name = "is_legal_status_verified")
     private Boolean isLegalStatusVerified;
+
+    @Column(name = "user_name")
+    private String userName;
+
+    private String password;
 }

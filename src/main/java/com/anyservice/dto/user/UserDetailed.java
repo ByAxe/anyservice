@@ -1,23 +1,17 @@
-package com.anyservice.dto;
+package com.anyservice.dto.user;
 
 import com.anyservice.dto.enums.LegalStatus;
 import com.anyservice.entity.Contacts;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
+@EqualsAndHashCode(callSuper = true)
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class UserDTO {
-    private UUID uuid;
-    private OffsetDateTime dtCreate;
-    private OffsetDateTime dtUpdate;
+@NoArgsConstructor
+public class UserDetailed extends UserBrief {
     private String description;
     private Contacts contacts;
     private LegalStatus legalStatus;

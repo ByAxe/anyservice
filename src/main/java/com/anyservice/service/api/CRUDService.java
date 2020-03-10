@@ -1,33 +1,30 @@
 package com.anyservice.service.api;
 
-import com.anyservice.dto.UserDTO;
-
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
-public interface CRUDService<T, ID> {
-    T create(T dto);
+public interface CRUDService<BRIEF, DETAILED, ID> {
+    DETAILED create(DETAILED dto);
 
-    T update(UserDTO dto, UUID uuid, Date version);
+    DETAILED update(DETAILED dto, ID uuid, Date version);
 
-    Iterable<T> saveAll(Iterable<T> dtoIterable);
+    Iterable<BRIEF> saveAll(Iterable<BRIEF> dtoIterable);
 
-    Optional<T> findById(ID id);
+    Optional<DETAILED> findById(ID id);
 
     boolean existsById(ID id);
 
-    Iterable<T> findAll();
+    Iterable<BRIEF> findAll();
 
-    Iterable<T> findAllById(Iterable<ID> ids);
+    Iterable<BRIEF> findAllById(Iterable<ID> ids);
 
     long count();
 
     void deleteById(ID id);
 
-    void delete(T dto);
+    void delete(DETAILED dto);
 
-    void deleteAll(Iterable<? extends T> dtoIterable);
+    void deleteAll(Iterable<? extends BRIEF> dtoIterable);
 
     void deleteAll();
 }

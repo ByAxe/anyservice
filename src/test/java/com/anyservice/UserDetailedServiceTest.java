@@ -1,8 +1,8 @@
 package com.anyservice;
 
 import com.anyservice.config.TestNGConfig;
-import com.anyservice.dto.UserDTO;
 import com.anyservice.dto.enums.LegalStatus;
+import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.Contacts;
 import org.junit.Test;
 
@@ -12,7 +12,7 @@ import java.util.UUID;
 import static org.apache.commons.lang3.RandomStringUtils.random;
 
 
-public class UserServiceTest extends TestNGConfig {
+public class UserDetailedServiceTest extends TestNGConfig {
 
     private String baseUrl = "/";
 
@@ -25,7 +25,7 @@ public class UserServiceTest extends TestNGConfig {
 
         UUID userUuid = UUID.randomUUID();
 
-        UserDTO userDTO = UserDTO.builder()
+        UserDetailed userDetailedDTO = UserDetailed.builder()
                 .uuid(userUuid)
                 .legalStatus(LegalStatus.LLC)
                 .isVerified(false)

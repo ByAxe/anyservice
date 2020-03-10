@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository extends PagingAndSortingRepository<UserEntity, UUID> {
+    UserEntity findFirstByUserName(String userName);
 }

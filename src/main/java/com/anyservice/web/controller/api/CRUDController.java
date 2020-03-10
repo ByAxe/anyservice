@@ -1,27 +1,25 @@
 package com.anyservice.web.controller.api;
 
-import java.util.Optional;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface CRUDController<T, ID> {
-    T save(T dto);
+    ResponseEntity<?> save(T dto, UUID uuid);
 
-    Iterable<T> saveAll(Iterable<T> dtoIterable);
+    ResponseEntity<?> findById(ID id);
 
-    Optional<T> findById(ID id);
+    ResponseEntity<Boolean> existsById(ID id);
 
-    boolean existsById(ID id);
+    ResponseEntity<?> findAll();
 
-    Iterable<T> findAll();
+    ResponseEntity<?> findAllById(List<ID> ids);
 
-    Iterable<T> findAllById(Iterable<ID> ids);
+    ResponseEntity<Long> count();
 
-    long count();
+    ResponseEntity<?> deleteById(ID id);
 
-    void deleteById(ID id);
+    ResponseEntity<?> delete(T dto);
 
-    void delete(T dto);
-
-    void deleteAll(Iterable<? extends T> dtoIterable);
-
-    void deleteAll();
 }

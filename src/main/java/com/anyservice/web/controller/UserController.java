@@ -3,12 +3,19 @@ package com.anyservice.web.controller;
 import com.anyservice.dto.UserDTO;
 import com.anyservice.service.UserService;
 import com.anyservice.web.controller.api.CRUDController;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.springframework.http.HttpStatus.*;
+
 @RestController
+@RequestMapping("/api/v1/user")
 public class UserController implements CRUDController<UserDTO, UUID> {
 
     private final UserService userService;
@@ -17,58 +24,74 @@ public class UserController implements CRUDController<UserDTO, UUID> {
         this.userService = userService;
     }
 
-    @Override
-    public UserDTO save(UserDTO dto) {
-        return userService.save(dto);
+    @PostMapping
+    public ResponseEntity<?> create(@RequestBody UserDTO dto) {
+        UserDTO saved = userService.create(dto);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setLocation(ServletUriComponentsBuilder
+                .fromCurrentRequest().path("/{id}")
+                .buildAndExpand(uuid).toUri());
+
+        return new ResponseEntity<>(saved, httpHeaders, CREATED);
     }
 
     @Override
-    public Iterable<UserDTO> saveAll(Iterable<UserDTO> dtoIterable) {
-        return userService.saveAll(dtoIterable);
+    @GetMapping("/{uuid}")
+    public ResponseEntity<?> findById(@PathVariable UUID uuid) {
+        Optional<UserDTO> userDTOOptional = userService.findById(uuid);
+
+        if (userDTOOptional.isPresent()) {
+            return new ResponseEntity<>(userDTOOptional.get(), OK);
+        } else {
+            return new ResponseEntity<>(null, NO_CONTENT);
+        }
     }
 
     @Override
-    public Optional<UserDTO> findById(UUID uuid) {
-        return userService.findById(uuid);
+    @GetMapping("/exists/{uuid}")
+    public ResponseEntity<Boolean> existsById(@PathVariable UUID uuid) {
+        boolean exists = userService.existsById(uuid);
+
+        return new ResponseEntity<>(exists, OK);
     }
 
     @Override
-    public boolean existsById(UUID uuid) {
-        return userService.existsById(uuid);
+    @GetMapping
+    public ResponseEntity<?> findAll() {
+        Iterable<UserDTO> dtoIterable = userService.findAll();
+
+        return new ResponseEntity<>(dtoIterable, OK);
     }
 
     @Override
-    public Iterable<UserDTO> findAll() {
-        return userService.findAll();
+    @GetMapping("/{uuids}")
+    public ResponseEntity<?> findAllById(@PathVariable List<UUID> uuids) {
+        Iterable<UserDTO> dtoIterable = userService.findAllById(uuids);
+
+        return new ResponseEntity<>(dtoIterable, OK);
     }
 
     @Override
-    public Iterable<UserDTO> findAllById(Iterable<UUID> uuids) {
-        return userService.findAllById(uuids);
+    @GetMapping("/count")
+    public ResponseEntity<Long> count() {
+        long count = userService.count();
+        return new ResponseEntity<>(count, OK);
     }
 
     @Override
-    public long count() {
-        return userService.count();
-    }
-
-    @Override
-    public void deleteById(UUID uuid) {
+    @DeleteMapping("/{uuid}")
+    public ResponseEntity<?> deleteById(@PathVariable UUID uuid) {
         userService.deleteById(uuid);
+
+        return new ResponseEntity<>(null, NO_CONTENT);
     }
 
     @Override
-    public void delete(UserDTO dto) {
+    @DeleteMapping
+    public ResponseEntity<?> delete(@RequestBody UserDTO dto) {
         userService.delete(dto);
-    }
 
-    @Override
-    public void deleteAll(Iterable<? extends UserDTO> dtoIterable) {
-        userService.deleteAll(dtoIterable);
-    }
-
-    @Override
-    public void deleteAll() {
-        userService.deleteAll();
+        return new ResponseEntity<>(null, NO_CONTENT);
     }
 }

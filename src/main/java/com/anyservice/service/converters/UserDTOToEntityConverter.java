@@ -14,7 +14,7 @@ public class UserDTOToEntityConverter implements Converter<UserDTO, UserEntity> 
                 .description(source.getDescription())
                 .isLegalStatusVerified(source.getIsLegalStatusVerified())
                 .isVerified(source.getIsVerified())
-                .legalStatus(source.getLegalStatus())
+                .legalStatus(source.getLegalStatus().name())
                 .build();
 
         entity.setUuid(source.getUuid());

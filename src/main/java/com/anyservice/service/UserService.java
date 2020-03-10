@@ -7,6 +7,7 @@ import com.anyservice.service.api.CRUDService;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,8 +26,21 @@ public class UserService implements CRUDService<UserDTO, UUID> {
     }
 
     @Override
-    public UserDTO save(UserDTO dto) {
+    public UserDTO create(UserDTO dto) {
         UserEntity entity = conversionService.convert(dto, UserEntity.class);
+
+        UserEntity savedEntity = userRepository.save(entity);
+
+        return conversionService.convert(savedEntity, UserDTO.class);
+    }
+
+    @Override
+    public UserDTO update(UserDTO dto, UUID uuid, Date version) {
+        if (!existsById(uuid)) {
+            throw new IllegalArgumentException("No entity was found with this uuid");
+        }
+
+        Optional<UserDTO> id = findById(uuid);
 
         UserEntity savedEntity = userRepository.save(entity);
 

@@ -1,6 +1,7 @@
 package com.anyservice.service.converters;
 
 import com.anyservice.dto.UserDTO;
+import com.anyservice.dto.enums.LegalStatus;
 import com.anyservice.entity.UserEntity;
 import org.springframework.core.convert.converter.Converter;
 
@@ -14,7 +15,7 @@ public class UserEntityToDTOConverter implements Converter<UserEntity, UserDTO> 
                 .contacts(source.getContacts())
                 .description(source.getDescription())
                 .isVerified(source.getIsVerified())
-                .legalStatus(source.getLegalStatus())
+                .legalStatus(LegalStatus.valueOf(source.getLegalStatus()))
                 .isLegalStatusVerified(source.getIsLegalStatusVerified())
                 .build();
     }

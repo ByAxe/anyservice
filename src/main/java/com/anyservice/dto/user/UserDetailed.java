@@ -17,4 +17,5 @@ public class UserDetailed extends UserBrief {
     private LegalStatus legalStatus;
     private Boolean isVerified;
     private Boolean isLegalStatusVerified;
+    private String password;
 }

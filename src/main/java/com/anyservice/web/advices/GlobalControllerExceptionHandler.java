@@ -2,7 +2,6 @@ package com.anyservice.web.advices;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.hateoas.mediatype.vnderrors.VndErrors;
@@ -20,8 +19,12 @@ import java.util.Locale;
 public class GlobalControllerExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalControllerExceptionHandler.class);
-    @Autowired
-    private MessageSource messageSource;
+
+    private final MessageSource messageSource;
+
+    public GlobalControllerExceptionHandler(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)

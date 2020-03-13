@@ -19,6 +19,7 @@
         <hibernate-types-52.version>2.9.5</hibernate-types-52.version>
         <test.ng.version>7.1.0</test.ng.version>
         <jbcrypt.version>0.4</jbcrypt.version>
+        <apache.commons.collections>4.4</apache.commons.collections>
     </properties>
 
     <dependencies>
@@ -80,6 +81,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.commons</groupId>-->
+        <!--            <artifactId>commons-collections4</artifactId>-->
+        <!--            <version>${apache.commons.collections}</version>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.mindrot</groupId>

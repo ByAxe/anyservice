@@ -1,9 +1,13 @@
 package com.anyservice.web.controller;
 
+import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
-import com.anyservice.dto.user.UserDetailedNew;
 import com.anyservice.service.UserService;
 import com.anyservice.web.controller.api.CRUDController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,17 +22,29 @@ import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/api/v1/user")
-public class UserController implements CRUDController<UserDetailed, UUID> {
+public class UserController implements CRUDController<UserBrief, UserDetailed, UUID> {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
+    private final MessageSource messageSource;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, MessageSource messageSource) {
         this.userService = userService;
+        this.messageSource = messageSource;
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody UserDetailedNew dto) {
-        UserDetailed saved = userService.create(dto);
+    public ResponseEntity<?> create(@RequestBody UserDetailed dto) {
+
+        UserDetailed saved;
+
+        try {
+            saved = userService.create(dto);
+        } catch (Exception e) {
+            logger.error(messageSource.getMessage("user.create",
+                    null, LocaleContextHolder.getLocale()));
+            throw e;
+        }
 
         HttpHeaders httpHeaders = new HttpHeaders();
 
@@ -70,7 +86,7 @@ public class UserController implements CRUDController<UserDetailed, UUID> {
     @Override
     @GetMapping
     public ResponseEntity<?> findAll() {
-        Iterable<UserDetailed> dtoIterable = userService.findAll();
+        Iterable<UserBrief> dtoIterable = userService.findAll();
 
         return new ResponseEntity<>(dtoIterable, OK);
     }
@@ -78,7 +94,7 @@ public class UserController implements CRUDController<UserDetailed, UUID> {
     @Override
     @GetMapping("/{uuids}")
     public ResponseEntity<?> findAllById(@PathVariable List<UUID> uuids) {
-        Iterable<UserDetailed> dtoIterable = userService.findAllById(uuids);
+        Iterable<UserBrief> dtoIterable = userService.findAllById(uuids);
 
         return new ResponseEntity<>(dtoIterable, OK);
     }

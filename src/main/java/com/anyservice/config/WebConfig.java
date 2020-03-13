@@ -1,6 +1,6 @@
 package com.anyservice.config;
 
-import com.anyservice.service.converters.user.dto_entity.UserDetailedNewToEntityConverter;
+import com.anyservice.service.converters.user.dto_entity.UserBriefToEntityConverter;
 import com.anyservice.service.converters.user.dto_entity.UserDetailedToEntityConverter;
 import com.anyservice.service.converters.user.entity_dto.UserEntityToBriefConverter;
 import com.anyservice.service.converters.user.entity_dto.UserEntityToDetailedConverter;
@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new UserDetailedToEntityConverter());
-        registry.addConverter(new UserDetailedNewToEntityConverter());
+        registry.addConverter(new UserBriefToEntityConverter());
         registry.addConverter(new UserEntityToDetailedConverter());
         registry.addConverter(new UserEntityToBriefConverter());
     }

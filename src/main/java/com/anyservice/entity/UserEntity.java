@@ -30,6 +30,10 @@ public class UserEntity extends EntityWithUUID {
     @Column(columnDefinition = "jsonb")
     private Contacts contacts;
 
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private Initials initials;
+
     @Column(name = "legal_status")
     private String legalStatus;
 

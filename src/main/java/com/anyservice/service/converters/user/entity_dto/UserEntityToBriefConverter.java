@@ -13,6 +13,7 @@ public class UserEntityToBriefConverter implements Converter<UserEntity, UserBri
         user.setDtUpdate(source.getDtUpdate());
         user.setDtCreate(source.getDtCreate());
         user.setUserName(source.getUserName());
+        user.setInitials(source.getInitials());
 
         return user;
     }

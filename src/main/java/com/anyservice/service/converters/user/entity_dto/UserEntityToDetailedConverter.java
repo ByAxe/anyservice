@@ -19,6 +19,9 @@ public class UserEntityToDetailedConverter implements Converter<UserEntity, User
         user.setIsLegalStatusVerified(source.getIsLegalStatusVerified());
         user.setIsVerified(source.getIsVerified());
         user.setLegalStatus(LegalStatus.valueOf(source.getLegalStatus()));
+        user.setInitials(source.getInitials());
+
+        user.setPassword(source.getPassword());
 
         return user;
     }

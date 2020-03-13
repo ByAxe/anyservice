@@ -37,6 +37,7 @@ create table if not exists users
     dt_create                timestamptz not null default now(),
     dt_update                timestamptz not null default now(),
     user_name                varchar(50) not null,
+    initials                 jsonb       not null,
     password                 varchar     not null,
     description              text,
     contacts                 jsonb,

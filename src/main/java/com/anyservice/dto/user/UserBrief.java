@@ -1,6 +1,6 @@
 package com.anyservice.dto.user;
 
-import com.anyservice.dto.api.AEssence;
+import com.anyservice.dto.api.APrimary;
 import com.anyservice.entity.Initials;
 import lombok.*;
 
@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserBrief extends AEssence {
+public class UserBrief extends APrimary {
     private String userName;
     private Initials initials;
 }

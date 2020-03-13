@@ -12,10 +12,8 @@
 [+] Implement "update" in Service layer
 [+] Implement "update" in Controller
 [+] Recreate Database from "script.sql"
+[+] Set up basic tests with TestNG
 
-[] Remove unnecessary methods from Service
-[] Remove unnecessary methods from Controller
-[] Set up basic tests with TestNG
 [] Cover UserController with tests
 [] Cover hash Function with unit tests
 [] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)

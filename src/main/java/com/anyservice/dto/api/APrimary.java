@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class AEssence {
+public abstract class APrimary {
     private UUID uuid;
     private OffsetDateTime dtCreate;
     private OffsetDateTime dtUpdate;

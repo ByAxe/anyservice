@@ -56,7 +56,7 @@ public class UserController implements CRUDController<UserBrief, UserDetailed, U
         return new ResponseEntity<>(saved, httpHeaders, CREATED);
     }
 
-    @PutMapping("/uuid/{uuid}/version/{version}")
+    @PutMapping("/{uuid}/version/{version}")
     public ResponseEntity<?> update(@RequestBody UserDetailed dto,
                                     @PathVariable UUID uuid, @PathVariable Date version) {
         UserDetailed updatedUser;

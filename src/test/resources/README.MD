@@ -4,7 +4,7 @@
 - Test Kind: Suite
 - Указать путь к файлу testing.xml
 - Выставить "In single module"
-- Use classpath or module: by.novacom.gias.gias-directory-service.test
+- Use classpath or module: com.anyservice
 ___
 
 Чтобы проходил FileTest необходимо

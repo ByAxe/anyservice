@@ -32,11 +32,11 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
 
     Class<? extends APrimary> getDetailedClass();
 
-    void assertEqualsDetailed(DETAILED det1, DETAILED det2);
+    void assertEqualsDetailed(DETAILED detailed, DETAILED otherDetailed);
 
-    void assertEqualsListBrief(List<BRIEF> l1, List<BRIEF> l2);
+    void assertEqualsListBrief(List<BRIEF> briefList, List<BRIEF> otherBriefList);
 
-    DETAILED createNewItem(int i);
+    DETAILED createNewItem();
 
     default String getExtendedUrl() {
         return urlPrefix + getUrl();
@@ -59,7 +59,7 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
 
         // Create items
         for (int i = 0; i < 10; i++) {
-            DETAILED item = createNewItem(i);
+            DETAILED item = createNewItem();
             items.add(item);
 
             String customerAsString = getObjectMapper().writeValueAsString(item);
@@ -80,7 +80,8 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
                 .getResponse()
                 .getContentAsString();
 
-        List<BRIEF> obtainedResult = getObjectMapper().readValue(result, getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
+        List<BRIEF> obtainedResult = getObjectMapper().readValue(result,
+                getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
 
         List<BRIEF> itemsB = items.stream()
                 .map(e -> (BRIEF) e)
@@ -100,7 +101,7 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
                         .getContentAsString());
 
         // Create item
-        DETAILED item = createNewItem(99);
+        DETAILED item = createNewItem();
         String customerAsString = getObjectMapper().writeValueAsString(item);
         getMockMvc().perform(post(getExtendedUrl())
                 .headers(getHeaders())
@@ -123,7 +124,7 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
     }
 
     default void deleteAndSelectByUUIDTest() throws Exception {
-        DETAILED item = createNewItem(98);
+        DETAILED item = createNewItem();
         String customerAsString = getObjectMapper().writeValueAsString(item);
         String headerLocation = getMockMvc().perform(post(getExtendedUrl())
                 .headers(getHeaders())
@@ -144,7 +145,8 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
                 .getResponse()
                 .getContentAsString();
 
-        DETAILED obtainedResult = getObjectMapper().readValue(contentAsString, getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+        DETAILED obtainedResult = getObjectMapper().readValue(contentAsString,
+                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
 
         // Assert its uuid's are equal
         Assert.assertEquals(obtainedResult.getUuid(), uuid);
@@ -161,12 +163,12 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
         // select again by uuid and expect there will be no entity returned
         getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
                 .headers(getHeaders())
-                .contentType(getContentType()));
-//                .andExpect(status().isOk());
+                .contentType(getContentType()))
+                .andExpect(status().isOk());
     }
 
     default void updateTest() throws Exception {
-        DETAILED item = createNewItem(97);
+        DETAILED item = createNewItem();
         String customerAsString = getObjectMapper().writeValueAsString(item);
         String headerLocation = getMockMvc().perform(post(getExtendedUrl())
                 .headers(getHeaders())
@@ -188,7 +190,8 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
                 .getResponse()
                 .getContentAsString();
 
-        DETAILED obtainedResult = getObjectMapper().readValue(contentAsString, getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+        DETAILED obtainedResult = getObjectMapper().readValue(contentAsString,
+                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
 
         // Assert its uuid's are equal
         Assert.assertEquals(obtainedResult.getUuid(), uuid);
@@ -196,15 +199,15 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
         long version = DateUtils.convertOffsetDateTimeToMills(obtainedResult.getDtUpdate());
 
         // Update
-        DETAILED updatedItem = createNewItem(96);
+        DETAILED updatedItem = createNewItem();
 
         String updatedItemAsString = getObjectMapper().writeValueAsString(updatedItem);
 
         getMockMvc().perform(put(getExtendedUrl() + "/" + uuid + "/version/" + version)
                 .headers(getHeaders())
                 .contentType(getContentType())
-                .content(updatedItemAsString));
-//                .andExpect(status().isOk());
+                .content(updatedItemAsString))
+                .andExpect(status().isOk());
 
         // Select updated row by uuid
         contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
@@ -215,7 +218,8 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
                 .getResponse()
                 .getContentAsString();
 
-        obtainedResult = getObjectMapper().readValue(contentAsString, getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+        obtainedResult = getObjectMapper().readValue(contentAsString,
+                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
 
         assertEqualsDetailed(obtainedResult, updatedItem);
     }

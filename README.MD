@@ -13,8 +13,9 @@
 [+] Implement "update" in Controller
 [+] Recreate Database from "script.sql"
 [+] Set up basic tests with TestNG
+[+] Cover basic UserController operations with tests
 
-[] Cover UserController with tests
+[] Make all the tests pass
 [] Cover hash Function with unit tests
 [] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)
 [] Add comparison of hashes on Log In

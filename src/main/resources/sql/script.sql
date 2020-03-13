@@ -1,15 +1,15 @@
-CREATE DATABASE anyservice_db;
+create database anyservice_db;
 
 \c anyservice_db
 
-DROP SCHEMA IF EXISTS anyservice CASCADE;
+drop schema if exists anyservice cascade;
 create schema if not exists anyservice;
 
 -- FILE_DESCRIPTION
-DROP TABLE IF EXISTS file_description;
-CREATE TABLE file_description
+drop table if exists file_description cascade;
+create table file_description
 (
-    uuid      uuid                        NOT NULL PRIMARY KEY,
+    uuid      uuid                        NOT NULL primary key,
     name      character(255)              NOT NULL,
     md5       character(64),
     size      bigint,
@@ -19,16 +19,16 @@ CREATE TABLE file_description
     summary   character(255),
     storage   jsonb
 );
-COMMENT ON TABLE file_description IS 'Таблица хранения метаданных файлов';
-COMMENT ON COLUMN file_description.uuid IS 'Первичный ключ и суррогатный идентификатор файла';
-COMMENT ON COLUMN file_description.name IS 'Описание файла';
-COMMENT ON COLUMN file_description.md5 IS 'Хеш файла по алгоритму MD5';
-COMMENT ON COLUMN file_description.size IS 'Размер файла в байтах';
-COMMENT ON COLUMN file_description.extension IS 'Расширение файла';
-COMMENT ON COLUMN file_description.dt_create IS 'Дата/время создания файла';
-COMMENT ON COLUMN file_description.state IS 'Состояние файла (TEMP или иное)';
-COMMENT ON COLUMN file_description.summary IS 'Сводка об файле';
-COMMENT ON COLUMN file_description.storage IS 'Описание местоположения файла в файловом хранилище';
+comment on table file_description is 'Таблица хранения метаданных файлов';
+comment on column file_description.uuid is 'Первичный ключ и суррогатный идентификатор файла';
+comment on column file_description.name is 'Описание файла';
+comment on column file_description.md5 is 'Хеш файла по алгоритму MD5';
+comment on column file_description.size is 'Размер файла в байтах';
+comment on column file_description.extension is 'Расширение файла';
+comment on column file_description.dt_create is 'Дата/время создания файла';
+comment on column file_description.state is 'Состояние файла (TEMP или иное)';
+comment on column file_description.summary is 'Сводка об файле';
+comment on column file_description.storage is 'Описание местоположения файла в файловом хранилище';
 
 drop table if exists users cascade;
 create table if not exists users
@@ -48,21 +48,21 @@ create table if not exists users
 );
 
 -- users_files
-DROP TABLE IF EXISTS users_files;
-CREATE TABLE users_files
+drop table if exists users_files;
+create table users_files
 (
-    uuid      UUID PRIMARY KEY,
-    user_uuid UUID REFERENCES users (uuid)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-    file_uuid UUID REFERENCES file_description (uuid)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-    dt_create TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    dt_update TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    uuid      UUID primary key,
+    user_uuid UUID references users (uuid)
+        on update cascade
+        on delete cascade,
+    file_uuid UUID references file_description (uuid)
+        on update cascade
+        on delete cascade,
+    dt_create timestamptz,
+    dt_update timestamptz
 );
 
-COMMENT ON TABLE users_files IS 'Contains data of two "virtual columns": documents_photos and portfolio';
+comment on table users_files is 'Contains data of two "virtual columns": documents_photos and portfolio';
 
 
 drop table if exists orders cascade;
@@ -83,21 +83,21 @@ create table if not exists orders
 );
 
 -- users_files
-DROP TABLE IF EXISTS orders_files;
-CREATE TABLE orders_files
+drop table if exists orders_files;
+create table orders_files
 (
-    uuid       UUID PRIMARY KEY,
-    order_uuid UUID REFERENCES orders (uuid)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-    file_uuid  UUID REFERENCES file_description (uuid)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-    dt_create  TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    dt_update  TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    uuid       UUID primary key,
+    order_uuid UUID references orders (uuid)
+        on update cascade
+        on delete cascade,
+    file_uuid  UUID references file_description (uuid)
+        on update cascade
+        on delete cascade,
+    dt_create  timestamptz,
+    dt_update  timestamptz
 );
 
-COMMENT ON TABLE orders_files IS 'Contains any additional materials for an order (videos and photos)';
+comment on table orders_files is 'Contains any additional materials for an order (videos and photos)';
 
 drop table if exists chats cascade;
 create table if not exists chats
@@ -117,7 +117,7 @@ create table if not exists reviews
     payload jsonb
 );
 
-drop table if exists categories;
+drop table if exists categories cascade;
 create table if not exists categories
 (
     uuid        uuid primary key,

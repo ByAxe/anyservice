@@ -35,13 +35,12 @@ public class UserController implements CRUDController<UserBrief, UserDetailed, U
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody UserDetailed dto) {
-
         UserDetailed saved;
 
         try {
             saved = userService.create(dto);
         } catch (Exception e) {
-            logger.error(messageSource.getMessage("user.create",
+            logger.info(messageSource.getMessage("user.create",
                     null, LocaleContextHolder.getLocale()));
             throw e;
         }
@@ -58,9 +57,21 @@ public class UserController implements CRUDController<UserBrief, UserDetailed, U
     }
 
     @PutMapping("/uuid/{uuid}/version/{version}")
-    public ResponseEntity<?> update(@RequestBody UserDetailed dto, @PathVariable UUID uuid, @PathVariable Date version) {
-        // TODO implement
-        return null;
+    public ResponseEntity<?> update(@RequestBody UserDetailed dto,
+                                    @PathVariable UUID uuid, @PathVariable Date version) {
+        UserDetailed updatedUser;
+
+        try {
+            updatedUser = userService.update(dto, uuid, version);
+        } catch (Exception e) {
+            logger.info(messageSource.getMessage("user.update",
+                    null, LocaleContextHolder.getLocale()));
+            throw e;
+        }
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        return new ResponseEntity<>(updatedUser, httpHeaders, OK);
     }
 
     @Override

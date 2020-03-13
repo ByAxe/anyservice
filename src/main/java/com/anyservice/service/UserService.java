@@ -58,6 +58,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
         // Hash the password
         String hash = passwordService.hash(user.getPassword());
 
+        // if conversion was unsuccessful
         if (entity == null) {
             String message = messageSource.getMessage("user.create.validate.username",
                     null, LocaleContextHolder.getLocale());
@@ -102,6 +103,23 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
         userValidator.validateUpdates(user);
 
         UserEntity entity = conversionService.convert(user, UserEntity.class);
+
+        String password = user.getPassword();
+        if (password == null || password.isEmpty()) {
+            // set new a password to the user
+            String hash = passwordService.hash(password);
+
+            // if conversion was unsuccessful
+            if (entity == null) {
+                String message = messageSource.getMessage("user.create.validate.username",
+                        null, LocaleContextHolder.getLocale());
+                logger.error(message);
+                throw new RuntimeException(message);
+            }
+
+            entity.setPassword(hash);
+        }
+
         UserEntity savedEntity = userRepository.save(entity);
         return conversionService.convert(savedEntity, UserDetailed.class);
     }
@@ -130,7 +148,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     }
 
     private Optional<UserDetailed> findByIdWithPassword(UUID id) {
-        Optional<UserEntity> optionalUserEntity = userRepository.findById(uuid);
+        Optional<UserEntity> optionalUserEntity = userRepository.findById(id);
 
         Optional<UserDetailed> userDTOOptional = Optional.empty();
 

@@ -9,10 +9,12 @@
 [+] Fix Brief-Detailed confilicts
 [+] Remove not used messages from i18n
 [+] Implement validation of update and create operations
+[+] Implement "update" in Service layer
+[+] Implement "update" in Controller
+[+] Recreate Database from "script.sql"
 
-[] Implement "update" in Service layer
-[] Implement "update" in Controller
-[] Recreate Database from "script.sql"
+[] Remove unnecessary methods from Service
+[] Remove unnecessary methods from Controller
 [] Set up basic tests with TestNG
 [] Cover UserController with tests
 [] Cover hash Function with unit tests
@@ -25,3 +27,4 @@
 [] Reach test coverage at least of 85%
 [] Replace all the hardcoded messages on one language to MessageSource messages
 [] Make the TODO in UserValidator
+[] Add function "Restore password"

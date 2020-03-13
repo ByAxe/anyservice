@@ -1,7 +1,11 @@
 package com.anyservice.entity;
 
 import com.anyservice.entity.api.EntityWithUUID;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
@@ -14,7 +18,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
+@SuperBuilder
 @Table(name = "users", schema = "anyservice")
 public class UserEntity extends EntityWithUUID {
 

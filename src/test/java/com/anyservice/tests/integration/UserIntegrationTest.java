@@ -1,7 +1,7 @@
-package com.anyservice;
+package com.anyservice.tests.integration;
 
 import com.anyservice.api.ICRUDTest;
-import com.anyservice.config.TestNGConfig;
+import com.anyservice.config.TestConfig;
 import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.dto.api.APrimary;
 import com.anyservice.dto.user.UserBrief;
@@ -22,7 +22,7 @@ import static com.anyservice.core.RandomValuesGenerator.*;
 import static org.apache.commons.lang3.RandomStringUtils.random;
 
 
-public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<UserBrief, UserDetailed> {
+public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBrief, UserDetailed> {
 
     private String baseUrl = "/";
 

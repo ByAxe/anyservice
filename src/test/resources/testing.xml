@@ -1,12 +1,14 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="suite" configfailurepolicy="continue">
-    <test name="directory-service">
+<suite name="suite" configfailurepolicy="continue" parallel="tests">
+    <test name="anyservice">
         <classes>
-            <class name="tests.NewsTest"/>
-            <class name="tests.FileTest"/>
-            <class name="tests.SubsectionTest"/>
+            <!--UNIT-->
+            <class name="com.anyservice.tests.unit.UserValidatorUnitTest"/>
+
+            <!--INTEGRATION-->
+            <class name="com.anyservice.tests.integration.UserIntegrationTest"/>
         </classes>
     </test>
 </suite>

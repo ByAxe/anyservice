@@ -11,19 +11,28 @@
 [+] Implement validation of update and create operations
 [+] Implement "update" in Service layer
 [+] Implement "update" in Controller
-[+] Recreate Database from "script.sql"[+] Set up basic tests with TestNG
+[+] Recreate Database from "script.sql"
+[+] Set up basic tests with TestNG
 [+] Cover basic UserController operations with tests
 [+] Make all the tests pass
 
-[] Cover hash Function with unit tests
-[] Cover all the validation cases with tests
-[] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)
-[] Add comparison of hashes on Log In
-[] Deploy basic application on Google Cloud
-[] Add amazon s3 to application
-[] Implement file storage for Users
-[] Write documentation for each and every method\class
-[] Reach test coverage at least of 85%
-[] Replace all the hardcoded messages on one language to MessageSource messages
-[] Make the TODO in UserValidator
-[] Add function "Restore password"
+[~] Cover all the validation cases with tests
+
+[ ] Cover hash Function with tests
+[ ] Cover create and update corner cases with tests
+[ ] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)
+[ ] Add comparison of hashes on Log In
+[ ] Deploy basic application on Google Cloud
+[ ] Add amazon s3 to application
+[ ] Implement file storage for Users
+[ ] Write documentation for each and every method\class
+[ ] Reach test coverage at least of 85%
+[ ] Replace all the hardcoded messages on one language to MessageSource messages
+[ ] Make the TODO in UserValidator
+[ ] Add function "Restore password"
+
+___
+**Explanations**
+Task completed  =>  [+]
+Task in process =>  [~]
+Task created    =>  [ ]

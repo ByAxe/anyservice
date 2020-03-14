@@ -35,15 +35,25 @@ public class UserValidator {
 
         String userName = user.getUserName();
 
-        UserEntity userFoundByUserName = userRepository.findFirstByUserName(userName);
-
-        if (userFoundByUserName != null) {
-            errors.put("userName", messageSource.getMessage("user.create.username",
+        // Check userName validity
+        if (userName == null || userName.isEmpty()) {
+            errors.put("userName", messageSource.getMessage("user.create.username.empty",
                     null, getLocale()));
+        } else {
+
+            // Make sure user with such userName does not already exist
+            UserEntity userFoundByUserName = userRepository.findFirstByUserName(userName);
+
+            if (userFoundByUserName != null) {
+                errors.put("userName", messageSource.getMessage("user.create.username.exists",
+                        null, getLocale()));
+            }
         }
 
+        // Password validation
         validatePassword(user.getPassword(), errors);
 
+        // Validate firstName, lastName etc.
         validateInitials(user.getInitials(), errors);
 
         return errors;

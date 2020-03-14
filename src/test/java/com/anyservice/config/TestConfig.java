@@ -30,7 +30,7 @@ import java.util.TimeZone;
         "classpath:environment.yml"
 })
 @DirtiesContext
-public abstract class TestNGConfig extends AbstractTransactionalTestNGSpringContextTests {
+public abstract class TestConfig extends AbstractTransactionalTestNGSpringContextTests {
     protected MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(),
             StandardCharsets.UTF_8);

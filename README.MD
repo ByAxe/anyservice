@@ -17,6 +17,7 @@
 
 [] Make all the tests pass
 [] Cover hash Function with unit tests
+[] Cover all the validation cases with tests
 [] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)
 [] Add comparison of hashes on Log In
 [] Deploy basic application on Google Cloud

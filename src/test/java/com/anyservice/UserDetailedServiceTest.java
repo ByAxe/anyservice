@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.util.Comparator;
 import java.util.List;
@@ -82,12 +83,12 @@ public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<U
         Assert.assertEquals(briefList.size(), otherBriefList.size());
 
         for (int element = 0; element < briefList.size(); element++) {
-            UserBrief detailed = briefList.get(element);
-            UserBrief otherDetailed = otherBriefList.get(element);
+            UserBrief user = briefList.get(element);
+            UserBrief otherUser = otherBriefList.get(element);
 
-            Assert.assertEquals(detailed.getUuid(), otherDetailed.getUuid());
-            Assert.assertEquals(detailed.getInitials(), otherDetailed.getInitials());
-            Assert.assertEquals(detailed.getUserName(), otherDetailed.getUserName());
+            Assert.assertEquals(user.getUuid(), otherUser.getUuid());
+            Assert.assertEquals(user.getInitials(), otherUser.getInitials());
+            Assert.assertEquals(user.getUserName(), otherUser.getUserName());
         }
     }
 
@@ -97,12 +98,12 @@ public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<U
                 .uuid(UUID.randomUUID())
                 .initials(createInitials())
                 .contacts(createContacts())
-                .userName(random(randomNumber(3, 100)))
+                .userName(random(randomNumber(3, 50), true, true))
                 .description(random(randomNumber(0, 1000)))
                 .isLegalStatusVerified(randomBoolean())
                 .isVerified(randomBoolean())
                 .legalStatus(randomEnum(LegalStatus.class))
-                .password(random(randomNumber(passwordMinLength, passwordMaxLength)))
+                .password(random(randomNumber(passwordMinLength, passwordMaxLength), true, true))
                 .build();
     }
 
@@ -121,25 +122,25 @@ public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<U
                 .build();
     }
 
-    @org.testng.annotations.Test
+    @Test
     @Override
     public void createAndSelectTest() throws Exception {
         ICRUDTest.super.createAndSelectTest();
     }
 
-    @org.testng.annotations.Test
+    @Test
     @Override
     public void countTest() throws Exception {
         ICRUDTest.super.countTest();
     }
 
-    @org.testng.annotations.Test
+    @Test
     @Override
     public void deleteAndSelectByUUIDTest() throws Exception {
         ICRUDTest.super.deleteAndSelectByUUIDTest();
     }
 
-    @org.testng.annotations.Test
+    @Test
     @Override
     public void updateTest() throws Exception {
         ICRUDTest.super.updateTest();

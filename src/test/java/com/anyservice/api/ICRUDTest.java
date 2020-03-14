@@ -80,14 +80,14 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
                 .getResponse()
                 .getContentAsString();
 
-        List<BRIEF> obtainedResult = getObjectMapper().readValue(result,
+        List<BRIEF> actual = getObjectMapper().readValue(result,
                 getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
 
-        List<BRIEF> itemsB = items.stream()
+        List<BRIEF> expected = items.stream()
                 .map(e -> (BRIEF) e)
                 .collect(Collectors.toList());
 
-        assertEqualsListBrief(obtainedResult, itemsB);
+        assertEqualsListBrief(actual, expected);
     }
 
     default void countTest() throws Exception {

@@ -1,10 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/anyservice_db
+    url: jdbc:postgresql://localhost:5432/anyservice_db?currentSchema=anyservice
     username: postgres
     password: postgres
-    #    schema: anyservice
     hikari:
       connection-timeout: 30000
       idle-timeout: 600000

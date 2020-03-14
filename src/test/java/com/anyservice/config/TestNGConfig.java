@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
-import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
@@ -17,9 +16,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
-import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.TimeZone;
+
+//import org.springframework.security.web.FilterChainProxy;
 
 
 @SpringBootTest(
@@ -27,7 +27,7 @@ import java.util.TimeZone;
         classes = {AnyServiceApplication.class}
 )
 @TestPropertySource(locations = {
-        "classpath:environment.properties"
+        "classpath:environment.yml"
 })
 @DirtiesContext
 public abstract class TestNGConfig extends AbstractTransactionalTestNGSpringContextTests {
@@ -41,14 +41,14 @@ public abstract class TestNGConfig extends AbstractTransactionalTestNGSpringCont
     protected WebApplicationContext wac;
     @Autowired
     protected ObjectMapper objectMapper;
-    @Resource
-    private FilterChainProxy springSecurityFilterChain;
+    //    @Resource
+//    private FilterChainProxy springSecurityFilterChain;
     @Autowired
     private Environment environment;
 
     @BeforeMethod
     public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).addFilter(springSecurityFilterChain).build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac)/*.addFilter(springSecurityFilterChain)*/.build();
     }
 
     @BeforeClass

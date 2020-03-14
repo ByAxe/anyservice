@@ -14,6 +14,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
 import static com.anyservice.core.DateUtils.convertOffsetDateTimeToMills;
 
 @Service
+@Transactional(readOnly = true)
 public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -43,6 +45,8 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
         this.messageSource = messageSource;
     }
 
+    @Override
+    @Transactional
     public UserDetailed create(UserDetailed user) {
         // Validate user
         Map<String, Object> errors = userValidator.validateCreation(user);
@@ -58,15 +62,19 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
         // Hash the password
         String hash = passwordService.hash(user.getPassword());
 
-        // if conversion was unsuccessful
+        // If conversion was unsuccessful
         if (entity == null) {
-            String message = messageSource.getMessage("user.create.validate.username",
+            String message = messageSource.getMessage("user.conversion.exception",
                     null, LocaleContextHolder.getLocale());
             logger.error(message);
             throw new RuntimeException(message);
         }
 
         entity.setPassword(hash);
+
+        // Set dtCreate and dtUpdate at NOW
+        entity.setDtCreate(OffsetDateTime.now());
+        entity.setDtUpdate(OffsetDateTime.now());
 
         // Save new user
         UserEntity savedEntity = userRepository.save(entity);
@@ -76,7 +84,10 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     }
 
     @Override
+    @Transactional
     public UserDetailed update(UserDetailed user, UUID uuid, Date version) {
+
+        // Check if such user exists
         if (!existsById(uuid)) {
             String message = messageSource.getMessage("user.not.exists",
                     null, LocaleContextHolder.getLocale());
@@ -89,6 +100,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
 
         long lastUpdateDate = convertOffsetDateTimeToMills(versionOfUserFromDB.getDtUpdate());
 
+        // Compare the versions of entities
         if (version.getTime() != lastUpdateDate) {
             String message = messageSource.getMessage("user.update.version",
                     null, LocaleContextHolder.getLocale());
@@ -96,35 +108,46 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
             throw new NullPointerException(message);
         }
 
+        // Set all the system fields
         user.setUuid(versionOfUserFromDB.getUuid());
         user.setDtCreate(versionOfUserFromDB.getDtCreate());
         user.setDtUpdate(OffsetDateTime.now());
 
-        userValidator.validateUpdates(user);
+        // Validate user
+        Map<String, Object> errors = userValidator.validateUpdates(user);
 
+        if (!errors.isEmpty()) {
+            logger.info(StringUtils.join(errors));
+            throw new IllegalArgumentException(errors.toString());
+        }
+
+        // If everything is ok - convert it to DB entity
         UserEntity entity = conversionService.convert(user, UserEntity.class);
 
+        // If conversion was unsuccessful
+        if (entity == null) {
+            String message = messageSource.getMessage("user.conversion.exception",
+                    null, LocaleContextHolder.getLocale());
+            logger.error(message);
+            throw new RuntimeException(message);
+        }
+
+        // Set new password if it's updated too
         String password = user.getPassword();
         if (password == null || password.isEmpty()) {
             // set new a password to the user
             String hash = passwordService.hash(password);
 
-            // if conversion was unsuccessful
-            if (entity == null) {
-                String message = messageSource.getMessage("user.create.validate.username",
-                        null, LocaleContextHolder.getLocale());
-                logger.error(message);
-                throw new RuntimeException(message);
-            }
-
             entity.setPassword(hash);
         }
 
+        // Save updated user to DB
         UserEntity savedEntity = userRepository.save(entity);
         return conversionService.convert(savedEntity, UserDetailed.class);
     }
 
     @Override
+    @Transactional
     public Iterable<UserBrief> saveAll(Iterable<UserBrief> dtoIterable) {
 
         List<UserEntity> entityList = Stream.of(dtoIterable)
@@ -194,11 +217,13 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     }
 
     @Override
+    @Transactional
     public void deleteById(UUID uuid) {
         userRepository.deleteById(uuid);
     }
 
     @Override
+    @Transactional
     public void delete(UserDetailed dto) {
         UserEntity entity = conversionService.convert(dto, UserEntity.class);
 
@@ -206,6 +231,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     }
 
     @Override
+    @Transactional
     public void deleteAll(Iterable<? extends UserBrief> dtoIterable) {
         List<UserEntity> entityList = Stream.of(dtoIterable)
                 .map(dto -> conversionService.convert(dto, UserEntity.class))
@@ -215,6 +241,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     }
 
     @Override
+    @Transactional
     public void deleteAll() {
         userRepository.deleteAll();
     }

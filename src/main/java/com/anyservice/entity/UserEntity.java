@@ -19,7 +19,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @Entity
 @SuperBuilder
-@Table(name = "users", schema = "anyservice")
+@Table(name = "users")
 public class UserEntity extends EntityWithUUID {
 
     @Column(name = "dt_create")

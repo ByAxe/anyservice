@@ -157,14 +157,14 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
         getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
 
         // select again by uuid and expect there will be no entity returned
         getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     default void updateTest() throws Exception {

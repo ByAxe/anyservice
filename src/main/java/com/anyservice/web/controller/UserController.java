@@ -22,7 +22,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/api/v1/user")
-public class UserController implements CRUDController<UserBrief, UserDetailed, UUID> {
+public class UserController implements CRUDController<UserBrief, UserDetailed, UUID, Long> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
@@ -58,11 +58,11 @@ public class UserController implements CRUDController<UserBrief, UserDetailed, U
 
     @PutMapping("/{uuid}/version/{version}")
     public ResponseEntity<?> update(@RequestBody UserDetailed dto,
-                                    @PathVariable UUID uuid, @PathVariable Date version) {
+                                    @PathVariable UUID uuid, @PathVariable Long version) {
         UserDetailed updatedUser;
 
         try {
-            updatedUser = userService.update(dto, uuid, version);
+            updatedUser = userService.update(dto, uuid, new Date(version));
         } catch (Exception e) {
             logger.info(messageSource.getMessage("user.update",
                     null, LocaleContextHolder.getLocale()));
@@ -103,7 +103,7 @@ public class UserController implements CRUDController<UserBrief, UserDetailed, U
     }
 
     @Override
-    @GetMapping("/{uuids}")
+    @GetMapping("uuid/list/{uuids}")
     public ResponseEntity<?> findAllById(@PathVariable List<UUID> uuids) {
         Iterable<UserBrief> dtoIterable = userService.findAllById(uuids);
 
@@ -118,17 +118,9 @@ public class UserController implements CRUDController<UserBrief, UserDetailed, U
     }
 
     @Override
-    @DeleteMapping("/{uuid}")
-    public ResponseEntity<?> deleteById(@PathVariable UUID uuid) {
-        userService.deleteById(uuid);
-
-        return new ResponseEntity<>(null, NO_CONTENT);
-    }
-
-    @Override
-    @DeleteMapping
-    public ResponseEntity<?> delete(@RequestBody UserDetailed dto) {
-        userService.delete(dto);
+    @DeleteMapping("/{uuid}/version/{version}")
+    public ResponseEntity<?> deleteById(@PathVariable UUID uuid, @PathVariable Long version) {
+        userService.deleteById(uuid, new Date(version));
 
         return new ResponseEntity<>(null, NO_CONTENT);
     }

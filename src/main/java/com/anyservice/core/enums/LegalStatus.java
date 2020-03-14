@@ -1,4 +1,4 @@
-package com.anyservice.dto.enums;
+package com.anyservice.core.enums;
 
 public enum LegalStatus {
     LLC,

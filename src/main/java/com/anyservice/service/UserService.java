@@ -18,14 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.anyservice.core.DateUtils.convertOffsetDateTimeToMills;
 
 @Service
 @Transactional(readOnly = true)
-public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
+public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, Date> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -73,6 +71,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
         entity.setPassword(hash);
 
         // Set dtCreate and dtUpdate at NOW
+        entity.setUuid(UUID.randomUUID());
         entity.setDtCreate(OffsetDateTime.now());
         entity.setDtUpdate(OffsetDateTime.now());
 
@@ -100,7 +99,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
 
         long lastUpdateDate = convertOffsetDateTimeToMills(versionOfUserFromDB.getDtUpdate());
 
-        // Compare the versions of entities
+        // Compare the versions ofNullable() entities
         if (version.getTime() != lastUpdateDate) {
             String message = messageSource.getMessage("user.update.version",
                     null, LocaleContextHolder.getLocale());
@@ -150,15 +149,19 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     @Transactional
     public Iterable<UserBrief> saveAll(Iterable<UserBrief> dtoIterable) {
 
-        List<UserEntity> entityList = Stream.of(dtoIterable)
-                .map(dto -> conversionService.convert(dto, UserEntity.class))
-                .collect(Collectors.toList());
+        List<UserEntity> entityList = new ArrayList<>();
+        for (UserBrief dto : dtoIterable) {
+            UserEntity convert = conversionService.convert(dto, UserEntity.class);
+            entityList.add(convert);
+        }
 
         Iterable<UserEntity> savedEntities = userRepository.saveAll(entityList);
 
-        List<UserBrief> savedDto = Stream.of(savedEntities)
-                .map(entity -> conversionService.convert(entity, UserBrief.class))
-                .collect(Collectors.toList());
+        List<UserBrief> savedDto = new ArrayList<>();
+        for (UserEntity entity : savedEntities) {
+            UserBrief convert = conversionService.convert(entity, UserBrief.class);
+            savedDto.add(convert);
+        }
 
         return savedDto;
     }
@@ -178,7 +181,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
         if (optionalUserEntity.isPresent()) {
             UserEntity entity = optionalUserEntity.get();
             UserDetailed userDetailedDTO = conversionService.convert(entity, UserDetailed.class);
-            userDTOOptional = Optional.of(userDetailedDTO);
+            userDTOOptional = Optional.ofNullable(userDetailedDTO);
         }
 
         return userDTOOptional;
@@ -193,9 +196,12 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     public Iterable<UserBrief> findAll() {
         Iterable<UserEntity> userEntities = userRepository.findAll();
 
-        List<UserBrief> savedDto = Stream.of(userEntities)
-                .map(entity -> conversionService.convert(entity, UserBrief.class))
-                .collect(Collectors.toList());
+        List<UserBrief> savedDto = new ArrayList<>();
+
+        for (UserEntity e : userEntities) {
+            UserBrief convert = conversionService.convert(e, UserBrief.class);
+            savedDto.add(convert);
+        }
 
         return savedDto;
     }
@@ -204,9 +210,12 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
     public Iterable<UserBrief> findAllById(Iterable<UUID> uuids) {
         Iterable<UserEntity> userEntities = userRepository.findAllById(uuids);
 
-        List<UserBrief> savedDto = Stream.of(userEntities)
-                .map(entity -> conversionService.convert(entity, UserBrief.class))
-                .collect(Collectors.toList());
+        List<UserBrief> savedDto = new ArrayList<>();
+
+        for (UserEntity e : userEntities) {
+            UserBrief convert = conversionService.convert(e, UserBrief.class);
+            savedDto.add(convert);
+        }
 
         return savedDto;
     }
@@ -218,24 +227,40 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID> {
 
     @Override
     @Transactional
-    public void deleteById(UUID uuid) {
+    public void deleteById(UUID uuid, Date version) {
+        // Check if such user exists
+        if (!existsById(uuid)) {
+            String message = messageSource.getMessage("user.not.exists",
+                    null, LocaleContextHolder.getLocale());
+            logger.info(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        // We know for sure such user exists
+        UserDetailed versionOfUserFromDB = findByIdWithPassword(uuid).get();
+
+        long lastUpdateDate = convertOffsetDateTimeToMills(versionOfUserFromDB.getDtUpdate());
+
+        // Compare the versions ofNullable() entities
+        if (version.getTime() != lastUpdateDate) {
+            String message = messageSource.getMessage("user.update.version",
+                    null, LocaleContextHolder.getLocale());
+            logger.info(message);
+            throw new NullPointerException(message);
+        }
+
+        // Delete user
         userRepository.deleteById(uuid);
     }
 
     @Override
     @Transactional
-    public void delete(UserDetailed dto) {
-        UserEntity entity = conversionService.convert(dto, UserEntity.class);
-
-        userRepository.delete(entity);
-    }
-
-    @Override
-    @Transactional
     public void deleteAll(Iterable<? extends UserBrief> dtoIterable) {
-        List<UserEntity> entityList = Stream.of(dtoIterable)
-                .map(dto -> conversionService.convert(dto, UserEntity.class))
-                .collect(Collectors.toList());
+        List<UserEntity> entityList = new ArrayList<>();
+        for (UserBrief dto : dtoIterable) {
+            UserEntity convert = conversionService.convert(dto, UserEntity.class);
+            entityList.add(convert);
+        }
 
         userRepository.deleteAll(entityList);
     }

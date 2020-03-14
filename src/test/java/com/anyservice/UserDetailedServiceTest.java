@@ -2,8 +2,8 @@ package com.anyservice;
 
 import com.anyservice.api.ICRUDTest;
 import com.anyservice.config.TestNGConfig;
+import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.dto.api.APrimary;
-import com.anyservice.dto.enums.LegalStatus;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.Contacts;
@@ -17,9 +17,8 @@ import org.testng.annotations.Test;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 
-import static com.anyservice.core.TestRandom.*;
+import static com.anyservice.core.RandomValuesGenerator.*;
 import static org.apache.commons.lang3.RandomStringUtils.random;
 
 
@@ -65,7 +64,6 @@ public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<U
 
     @Override
     public void assertEqualsDetailed(UserDetailed detailed, UserDetailed otherDetailed) {
-        Assert.assertEquals(detailed.getUuid(), otherDetailed.getUuid());
         Assert.assertEquals(detailed.getInitials(), otherDetailed.getInitials());
         Assert.assertEquals(detailed.getContacts(), otherDetailed.getContacts());
         Assert.assertEquals(detailed.getUserName(), otherDetailed.getUserName());
@@ -86,7 +84,6 @@ public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<U
             UserBrief user = briefList.get(element);
             UserBrief otherUser = otherBriefList.get(element);
 
-            Assert.assertEquals(user.getUuid(), otherUser.getUuid());
             Assert.assertEquals(user.getInitials(), otherUser.getInitials());
             Assert.assertEquals(user.getUserName(), otherUser.getUserName());
         }
@@ -95,11 +92,10 @@ public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<U
     @Override
     public UserDetailed createNewItem() {
         return UserDetailed.builder()
-                .uuid(UUID.randomUUID())
                 .initials(createInitials())
                 .contacts(createContacts())
-                .userName(random(randomNumber(3, 50), true, true))
-                .description(random(randomNumber(0, 1000)))
+                .userName(randomString(3, 50))
+                .description(randomString(0, 1000))
                 .isLegalStatusVerified(randomBoolean())
                 .isVerified(randomBoolean())
                 .legalStatus(randomEnum(LegalStatus.class))
@@ -118,7 +114,9 @@ public class UserDetailedServiceTest extends TestNGConfig implements ICRUDTest<U
     private Contacts createContacts() {
         return Contacts.builder()
                 .phone(random(randomNumber(6, 50), false, true))
-                .email(random(randomNumber(5, 100)))
+                .email(randomString(5, 100))
+                .google(randomString(5, 100))
+                .facebook(randomString(5, 100))
                 .build();
     }
 

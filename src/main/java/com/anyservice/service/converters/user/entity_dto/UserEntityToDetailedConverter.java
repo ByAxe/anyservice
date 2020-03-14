@@ -1,6 +1,6 @@
 package com.anyservice.service.converters.user.entity_dto;
 
-import com.anyservice.dto.enums.LegalStatus;
+import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.UserEntity;
 import org.springframework.core.convert.converter.Converter;

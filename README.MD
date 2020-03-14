@@ -11,11 +11,10 @@
 [+] Implement validation of update and create operations
 [+] Implement "update" in Service layer
 [+] Implement "update" in Controller
-[+] Recreate Database from "script.sql"
-[+] Set up basic tests with TestNG
+[+] Recreate Database from "script.sql"[+] Set up basic tests with TestNG
 [+] Cover basic UserController operations with tests
+[+] Make all the tests pass
 
-[] Make all the tests pass
 [] Cover hash Function with unit tests
 [] Cover all the validation cases with tests
 [] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)

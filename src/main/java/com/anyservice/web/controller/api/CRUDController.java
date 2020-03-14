@@ -2,13 +2,12 @@ package com.anyservice.web.controller.api;
 
 import org.springframework.http.ResponseEntity;
 
-import java.util.Date;
 import java.util.List;
 
-public interface CRUDController<BRIEF, DETAILED, ID> {
+public interface CRUDController<BRIEF, DETAILED, ID, VERSION> {
     ResponseEntity<?> create(DETAILED dto);
 
-    ResponseEntity<?> update(DETAILED dto, ID uuid, Date version);
+    ResponseEntity<?> update(DETAILED dto, ID uuid, VERSION version);
 
     ResponseEntity<?> findById(ID id);
 
@@ -20,8 +19,5 @@ public interface CRUDController<BRIEF, DETAILED, ID> {
 
     ResponseEntity<Long> count();
 
-    ResponseEntity<?> deleteById(ID id);
-
-    ResponseEntity<?> delete(DETAILED dto);
-
+    ResponseEntity<?> deleteById(ID id, VERSION version);
 }

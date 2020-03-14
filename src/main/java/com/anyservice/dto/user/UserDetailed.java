@@ -1,6 +1,6 @@
 package com.anyservice.dto.user;
 
-import com.anyservice.dto.enums.LegalStatus;
+import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.entity.Contacts;
 import lombok.AllArgsConstructor;
 import lombok.Data;

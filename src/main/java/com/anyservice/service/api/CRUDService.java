@@ -1,12 +1,11 @@
 package com.anyservice.service.api;
 
-import java.util.Date;
 import java.util.Optional;
 
-public interface CRUDService<BRIEF, DETAILED, ID> {
+public interface CRUDService<BRIEF, DETAILED, ID, VERSION> {
     DETAILED create(DETAILED dto);
 
-    DETAILED update(DETAILED dto, ID uuid, Date version);
+    DETAILED update(DETAILED dto, ID uuid, VERSION version);
 
     Iterable<BRIEF> saveAll(Iterable<BRIEF> dtoIterable);
 
@@ -20,9 +19,7 @@ public interface CRUDService<BRIEF, DETAILED, ID> {
 
     long count();
 
-    void deleteById(ID id);
-
-    void delete(DETAILED dto);
+    void deleteById(ID id, VERSION version);
 
     void deleteAll(Iterable<? extends BRIEF> dtoIterable);
 

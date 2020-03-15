@@ -17,6 +17,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -201,6 +202,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
 
         // Try to change userName of firstUser, on the userName of the secondUser
         obtainedResult.setUserName(userNameOfSecondUser);
+        obtainedResult.setPassword(randomString(passwordMinLength, passwordMaxLength));
 
         String updatedUserAsString = getObjectMapper().writeValueAsString(obtainedResult);
 
@@ -209,6 +211,45 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .headers(getHeaders())
                 .contentType(getContentType())
                 .content(updatedUserAsString))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deleteNotExistingUser() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        long version = new Date().getTime();
+
+        getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deleteUserWithWrongVersion() throws Exception {
+        // Create user
+        UserDetailed firstUser = createNewItem();
+
+        String firstUserAsString = getObjectMapper().writeValueAsString(firstUser);
+
+        String headerLocation = getMockMvc().perform(post(getExtendedUrl())
+                .headers(getHeaders())
+                .contentType(getContentType())
+                .content(firstUserAsString))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getHeader("Location");
+
+        UUID uuid = getUuidFromHeaderLocation(headerLocation);
+
+        // Set wrong version
+        long version = new Date().getTime() + 100_000;
+
+        // Make delete request and expect exception
+        getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
+                .headers(getHeaders())
+                .contentType(getContentType()))
                 .andExpect(status().isBadRequest());
     }
 }

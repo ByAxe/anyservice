@@ -17,8 +17,8 @@
 [+] Make all the tests pass
 [+] Cover all the validation scenarios with tests
 [+] Cover hash Function with tests
+[+] Cover create and update corner cases with tests
 
-[ ] Cover create and update corner cases with tests
 [ ] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)
 [ ] Add comparison of hashes on Log In
 [ ] Deploy basic application on Google Cloud

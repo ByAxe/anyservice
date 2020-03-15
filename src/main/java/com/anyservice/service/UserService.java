@@ -131,7 +131,7 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
             throw new RuntimeException(message);
         }
 
-        // Set new password if it's updated too
+        // Set a new password if it's updated too
         String password = user.getPassword();
         if (password == null || password.isEmpty()) {
             // set new a password to the user
@@ -143,27 +143,6 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
         // Save updated user to DB
         UserEntity savedEntity = userRepository.save(entity);
         return conversionService.convert(savedEntity, UserDetailed.class);
-    }
-
-    @Override
-    @Transactional
-    public Iterable<UserBrief> saveAll(Iterable<UserBrief> dtoIterable) {
-
-        List<UserEntity> entityList = new ArrayList<>();
-        for (UserBrief dto : dtoIterable) {
-            UserEntity convert = conversionService.convert(dto, UserEntity.class);
-            entityList.add(convert);
-        }
-
-        Iterable<UserEntity> savedEntities = userRepository.saveAll(entityList);
-
-        List<UserBrief> savedDto = new ArrayList<>();
-        for (UserEntity entity : savedEntities) {
-            UserBrief convert = conversionService.convert(entity, UserBrief.class);
-            savedDto.add(convert);
-        }
-
-        return savedDto;
     }
 
     @Override
@@ -243,26 +222,14 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
 
         // Compare the versions ofNullable() entities
         if (version.getTime() != lastUpdateDate) {
-            String message = messageSource.getMessage("user.update.version",
+            String message = messageSource.getMessage("user.delete.version",
                     null, LocaleContextHolder.getLocale());
             logger.info(message);
-            throw new NullPointerException(message);
+            throw new IllegalArgumentException(message);
         }
 
         // Delete user
         userRepository.deleteById(uuid);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAll(Iterable<? extends UserBrief> dtoIterable) {
-        List<UserEntity> entityList = new ArrayList<>();
-        for (UserBrief dto : dtoIterable) {
-            UserEntity convert = conversionService.convert(dto, UserEntity.class);
-            entityList.add(convert);
-        }
-
-        userRepository.deleteAll(entityList);
     }
 
     @Override

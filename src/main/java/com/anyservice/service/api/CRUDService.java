@@ -7,8 +7,6 @@ public interface CRUDService<BRIEF, DETAILED, ID, VERSION> {
 
     DETAILED update(DETAILED dto, ID uuid, VERSION version);
 
-    Iterable<BRIEF> saveAll(Iterable<BRIEF> dtoIterable);
-
     Optional<DETAILED> findById(ID id);
 
     boolean existsById(ID id);
@@ -20,8 +18,6 @@ public interface CRUDService<BRIEF, DETAILED, ID, VERSION> {
     long count();
 
     void deleteById(ID id, VERSION version);
-
-    void deleteAll(Iterable<? extends BRIEF> dtoIterable);
 
     void deleteAll();
 }

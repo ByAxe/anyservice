@@ -13,8 +13,6 @@ public interface CRUDService<BRIEF, DETAILED, ID, VERSION> {
 
     Iterable<BRIEF> findAll();
 
-    Iterable<BRIEF> findAllById(Iterable<ID> ids);
-
     long count();
 
     void deleteById(ID id, VERSION version);

@@ -150,6 +150,12 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     }
 
     @Test
+    @Override
+    public void createAndFindAllByIdListTest() throws Exception {
+        ICRUDTest.super.createAndFindAllByIdListTest();
+    }
+
+    @Test
     public void userNameValidationTest_changeOnExistingUserName() throws Exception {
         String userNameOfFirstUser = randomString(1, 50);
         String userNameOfSecondUser = randomString(1, 50);

@@ -186,6 +186,20 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
     }
 
     @Override
+    public Iterable<UserBrief> findAllById(Iterable<UUID> uuids) {
+        Iterable<UserEntity> userEntities = userRepository.findAllById(uuids);
+
+        List<UserBrief> savedDto = new ArrayList<>();
+
+        for (UserEntity e : userEntities) {
+            UserBrief convert = conversionService.convert(e, UserBrief.class);
+            savedDto.add(convert);
+        }
+
+        return savedDto;
+    }
+
+    @Override
     public long count() {
         return userRepository.count();
     }

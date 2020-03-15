@@ -223,4 +223,56 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
 
         assertEqualsDetailed(obtainedResult, updatedItem);
     }
+
+    default void createAndFindAllByIdListTest() throws Exception {
+        List<DETAILED> items = new ArrayList<>();
+        List<UUID> uuidList = new ArrayList<>();
+
+        // Create items
+        for (int i = 0; i < 10; i++) {
+            DETAILED item = createNewItem();
+
+            items.add(item);
+
+            String customerAsString = getObjectMapper().writeValueAsString(item);
+
+            String headerLocation = getMockMvc().perform(post(getExtendedUrl())
+                    .headers(getHeaders())
+                    .contentType(getContentType())
+                    .content(customerAsString))
+                    .andExpect(status().isCreated())
+                    .andReturn()
+                    .getResponse()
+                    .getHeader("Location");
+
+            UUID uuid = getUuidFromHeaderLocation(headerLocation);
+            uuidList.add(uuid);
+        }
+
+        // Create a string for a query from uuidList
+        String uuidListAsString = uuidList.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        // Select items by uuid's
+        String result = getMockMvc().perform(get(getExtendedUrl() + "/uuid/list/" + uuidListAsString)
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Convert it to list of briefs
+        List<BRIEF> actual = getObjectMapper().readValue(result,
+                getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
+
+        // Convert our detailed list to brief list
+        List<BRIEF> expected = items.stream()
+                .map(e -> (BRIEF) e)
+                .collect(Collectors.toList());
+
+        // Ensure that they are equal
+        assertEqualsListBrief(actual, expected);
+    }
 }

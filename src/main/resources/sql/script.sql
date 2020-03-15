@@ -36,7 +36,7 @@ create table if not exists users
     uuid                     uuid primary key,
     dt_create                timestamptz not null default now(),
     dt_update                timestamptz not null default now(),
-    user_name                varchar(50) not null,
+    user_name                varchar(50) not null unique,
     initials                 jsonb       not null,
     password                 varchar     not null,
     description              text,

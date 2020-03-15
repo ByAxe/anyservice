@@ -6,7 +6,7 @@ import com.anyservice.entity.UserEntity;
 import com.anyservice.repository.UserRepository;
 import com.anyservice.service.api.CRUDService;
 import com.anyservice.service.api.IPasswordService;
-import com.anyservice.service.validators.UserValidator;
+import com.anyservice.service.validators.api.IValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +29,12 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
 
     private final UserRepository userRepository;
     private final ConversionService conversionService;
-    private final UserValidator userValidator;
+    private final IValidator<UserDetailed> userValidator;
     private final IPasswordService passwordService;
     private final MessageSource messageSource;
 
     public UserService(UserRepository userRepository, ConversionService conversionService,
-                       UserValidator userValidator, IPasswordService passwordService,
+                       IValidator<UserDetailed> userValidator, IPasswordService passwordService,
                        MessageSource messageSource) {
         this.userRepository = userRepository;
         this.conversionService = conversionService;

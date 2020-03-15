@@ -15,8 +15,7 @@
 [+] Set up basic tests with TestNG
 [+] Cover basic UserController operations with tests
 [+] Make all the tests pass
-
-[~] Cover all the validation cases with tests
+[+] Cover all the validation scenarios with tests
 
 [ ] Cover hash Function with tests
 [ ] Cover create and update corner cases with tests

@@ -2,6 +2,7 @@ package com.anyservice.tests.integration;
 
 import com.anyservice.api.ICRUDTest;
 import com.anyservice.config.TestConfig;
+import com.anyservice.core.DateUtils;
 import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.dto.api.APrimary;
 import com.anyservice.dto.user.UserBrief;
@@ -17,9 +18,12 @@ import org.testng.annotations.Test;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 import static com.anyservice.core.RandomValuesGenerator.*;
 import static org.apache.commons.lang3.RandomStringUtils.random;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBrief, UserDetailed> {
@@ -142,5 +146,69 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     @Override
     public void updateTest() throws Exception {
         ICRUDTest.super.updateTest();
+    }
+
+    @Test
+    public void userNameValidationTest_changeOnExistingUserName() throws Exception {
+        String userNameOfFirstUser = randomString(1, 50);
+        String userNameOfSecondUser = randomString(1, 50);
+
+        // Create first user
+        UserDetailed firstUser = createNewItem();
+        firstUser.setUserName(userNameOfFirstUser);
+
+        String firstUserAsString = getObjectMapper().writeValueAsString(firstUser);
+
+        String headerLocation = getMockMvc().perform(post(getExtendedUrl())
+                .headers(getHeaders())
+                .contentType(getContentType())
+                .content(firstUserAsString))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getHeader("Location");
+
+        UUID uuidOfFirstUser = getUuidFromHeaderLocation(headerLocation);
+
+        // Create the second user
+        UserDetailed secondUser = createNewItem();
+        secondUser.setUserName(userNameOfSecondUser);
+
+        String secondUserAsString = getObjectMapper().writeValueAsString(secondUser);
+
+        getMockMvc().perform(post(getExtendedUrl())
+                .headers(getHeaders())
+                .contentType(getContentType())
+                .content(secondUserAsString))
+                .andExpect(status().isCreated());
+
+        // Select the first user
+        String contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuidOfFirstUser)
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        UserDetailed obtainedResult = getObjectMapper().readValue(contentAsString,
+                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+
+        // Assert its uuid's are equal
+        Assert.assertEquals(obtainedResult.getUuid(), uuidOfFirstUser);
+
+        long version = DateUtils.convertOffsetDateTimeToMills(obtainedResult.getDtUpdate());
+
+        // Try to change userName of firstUser, on the userName of the secondUser
+        obtainedResult.setUserName(userNameOfSecondUser);
+
+        String updatedUserAsString = getObjectMapper().writeValueAsString(obtainedResult);
+
+        // Make sure we get an exception in the end
+        getMockMvc().perform(put(getExtendedUrl() + "/" + uuidOfFirstUser + "/version/" + version)
+                .headers(getHeaders())
+                .contentType(getContentType())
+                .content(updatedUserAsString))
+                .andExpect(status().isBadRequest());
     }
 }

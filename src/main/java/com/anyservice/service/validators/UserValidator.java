@@ -4,18 +4,19 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.Initials;
 import com.anyservice.entity.UserEntity;
 import com.anyservice.repository.UserRepository;
+import com.anyservice.service.validators.api.AValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 @Service
-public class UserValidator {
-
+public class UserValidator extends AValidator<UserDetailed> {
     private final UserRepository userRepository;
     private final MessageSource messageSource;
 
@@ -30,25 +31,16 @@ public class UserValidator {
         this.messageSource = messageSource;
     }
 
+    @Override
+    public MessageSource getMessageSource() {
+        return messageSource;
+    }
+
     public Map<String, Object> validateCreation(UserDetailed user) {
         Map<String, Object> errors = new HashMap<>();
 
-        String userName = user.getUserName();
-
-        // Check userName validity
-        if (userName == null || userName.isEmpty()) {
-            errors.put("userName", messageSource.getMessage("user.create.username.empty",
-                    null, getLocale()));
-        } else {
-
-            // Make sure user with such userName does not already exist
-            UserEntity userFoundByUserName = userRepository.findFirstByUserName(userName);
-
-            if (userFoundByUserName != null) {
-                errors.put("userName", messageSource.getMessage("user.create.username.exists",
-                        null, getLocale()));
-            }
-        }
+        // UserName validation
+        validateUserName(user.getUserName(), user.getUuid(), errors);
 
         // Password validation
         validatePassword(user.getPassword(), errors);
@@ -70,34 +62,75 @@ public class UserValidator {
             validatePassword(password, errors);
         }
 
+        // UserName validation
+        validateUserName(user.getUserName(), user.getUuid(), errors);
+
         return errors;
     }
 
     /**
-     * Validate password and put errors to passed errors object-storage
+     * Validate userName according to rules
      *
-     * @param password
-     * @param errors
+     * @param userName userName of a user
+     * @param userUuid user identifier
+     * @param errors   list of errors during validation
      */
-    private void validatePassword(String password, Map<String, Object> errors) {
+    public void validateUserName(String userName, UUID userUuid, Map<String, Object> errors) {
+        // Check userName validity
+        if (userName == null || userName.isEmpty()) {
+            errors.put("username", getMessageSource().getMessage("user.username.empty",
+                    null, getLocale()));
+        } else {
+
+            // Make sure user with such userName does not already exist
+            UserEntity userFoundByUserName = userRepository.findFirstByUserName(userName);
+
+            if (userFoundByUserName != null) {
+
+                // Make sure it's not the same user, with the same userName
+                if (!userFoundByUserName.getUuid().equals(userUuid)) {
+
+                    // Otherwise, - claim the mistake
+                    errors.put("username", getMessageSource().getMessage("user.username.exists",
+                            null, getLocale()));
+                }
+            }
+
+            // Check if userName contains only allowed characters
+            for (char ch : userName.toCharArray()) {
+                if (!Character.isLetter(ch) && !Character.isDigit(ch)) {
+                    errors.put("username.content", getMessageSource().getMessage("user.useraname.content",
+                            null, getLocale()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Validate the password and put errors to passed errors object-storage
+     *
+     * @param password that must be validated
+     * @param errors   obtained during validation
+     */
+    public void validatePassword(String password, Map<String, Object> errors) {
         if (password == null) {
-            errors.put("password", messageSource.getMessage("user.password.empty",
+            errors.put("password", getMessageSource().getMessage("user.password.empty",
                     null, getLocale()));
         } else {
 
             // Password length validation
             if (password.length() < passwordMinLength) {
-                errors.put("password.length", messageSource.getMessage("user.password.short",
+                errors.put("password.length", getMessageSource().getMessage("user.password.short",
                         new Object[]{passwordMinLength}, getLocale()));
             } else if (password.length() > passwordMaxLength) {
-                errors.put("password.length", messageSource.getMessage("user.password.long",
+                errors.put("password.length", getMessageSource().getMessage("user.password.long",
                         new Object[]{passwordMaxLength}, getLocale()));
             }
 
             // Password content validation
             for (char ch : password.toCharArray()) {
                 if (!Character.isLetter(ch) && !Character.isDigit(ch)) {
-                    errors.put("password.content", messageSource.getMessage("user.password.content",
+                    errors.put("password.content", getMessageSource().getMessage("user.password.content",
                             null, getLocale()));
                 }
             }
@@ -110,45 +143,32 @@ public class UserValidator {
      * @param initials of a user
      * @param errors   all the errors gathered in process of validation
      */
-    private void validateInitials(Initials initials, Map<String, Object> errors) {
+    public void validateInitials(Initials initials, Map<String, Object> errors) {
         if (initials != null) {
             String firstName = initials.getFirstName();
 
             if (firstName == null || firstName.isEmpty()) {
-                errors.put("initials.firstName", messageSource.getMessage("user.initials.firstname.empty",
+                errors.put("initials.firstName", getMessageSource().getMessage("user.initials.firstname.empty",
                         null, getLocale()));
             } else {
                 validateLettersOnlyField(firstName, "firstName", errors);
             }
 
-            // TODO in the returned messages always will be these "fieldNames" despite the locale. Must be fixed.
-            validateLettersOnlyField(initials.getLastName(), "lastName", errors);
-            validateLettersOnlyField(initials.getMiddleName(), "middleName", errors);
+            String lastName = initials.getLastName();
+            String middleName = initials.getMiddleName();
 
+            // TODO in the returned messages always will be these "fieldNames" despite the locale. Must be fixed.
+            if (lastName != null) {
+                validateLettersOnlyField(initials.getLastName(), "lastName", errors);
+            }
+
+            if (middleName != null) {
+                validateLettersOnlyField(initials.getMiddleName(), "middleName", errors);
+            }
         } else {
-            errors.put("initials", messageSource.getMessage("user.initials.not.exist",
+            errors.put("initials", getMessageSource().getMessage("user.initials.not.exist",
                     null, getLocale()));
         }
     }
 
-    /**
-     * Ensure that given field contains only letters
-     *
-     * @param field     field content
-     * @param fieldName field name
-     * @param errors    errors during validation
-     */
-    private void validateLettersOnlyField(String field, String fieldName, Map<String, Object> errors) {
-        // Do not need to validate this field if it's null
-        // Because necessity of it must be ensured somewhere before calling this method
-        if (field == null) return;
-
-        for (char ch : field.toCharArray()) {
-            if (!Character.isLetter(ch)) {
-                errors.put(fieldName, messageSource.getMessage("user.letter.only.field",
-                        new Object[]{fieldName}, getLocale()));
-                return;
-            }
-        }
-    }
 }

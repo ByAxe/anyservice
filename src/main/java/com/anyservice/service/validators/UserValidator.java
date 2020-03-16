@@ -4,7 +4,8 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.Initials;
 import com.anyservice.entity.UserEntity;
 import com.anyservice.repository.UserRepository;
-import com.anyservice.service.validators.api.AValidator;
+import com.anyservice.service.PasswordService;
+import com.anyservice.service.validators.api.user.AUserValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,10 @@ import java.util.UUID;
 import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 @Service
-public class UserValidator extends AValidator<UserDetailed> {
+public class UserValidator extends AUserValidator<UserDetailed> {
     private final UserRepository userRepository;
     private final MessageSource messageSource;
+    private final PasswordService passwordService;
 
     @Value("${password.length.min}")
     private int passwordMinLength;
@@ -26,9 +28,11 @@ public class UserValidator extends AValidator<UserDetailed> {
     @Value("${password.length.max}")
     private int passwordMaxLength;
 
-    public UserValidator(UserRepository userRepository, MessageSource messageSource) {
+    public UserValidator(UserRepository userRepository, MessageSource messageSource,
+                         PasswordService passwordService) {
         this.userRepository = userRepository;
         this.messageSource = messageSource;
+        this.passwordService = passwordService;
     }
 
     @Override
@@ -36,6 +40,7 @@ public class UserValidator extends AValidator<UserDetailed> {
         return messageSource;
     }
 
+    @Override
     public Map<String, Object> validateCreation(UserDetailed user) {
         Map<String, Object> errors = new HashMap<>();
 
@@ -51,6 +56,7 @@ public class UserValidator extends AValidator<UserDetailed> {
         return errors;
     }
 
+    @Override
     public Map<String, Object> validateUpdates(UserDetailed user) {
         Map<String, Object> errors = new HashMap<>();
 
@@ -68,13 +74,7 @@ public class UserValidator extends AValidator<UserDetailed> {
         return errors;
     }
 
-    /**
-     * Validate userName according to rules
-     *
-     * @param userName userName of a user
-     * @param userUuid user identifier
-     * @param errors   list of errors during validation
-     */
+    @Override
     public void validateUserName(String userName, UUID userUuid, Map<String, Object> errors) {
         // Check userName validity
         if (userName == null || userName.isEmpty()) {
@@ -106,12 +106,38 @@ public class UserValidator extends AValidator<UserDetailed> {
         }
     }
 
-    /**
-     * Validate the password and put errors to passed errors object-storage
-     *
-     * @param password that must be validated
-     * @param errors   obtained during validation
-     */
+    @Override
+    public Map<String, Object> validatePasswordForChange(String oldPassword, String newPassword,
+                                                         String passwordFromStorage) {
+        Map<String, Object> errors = new HashMap<>();
+
+        // Check presence of new and old passwords
+        if (newPassword != null) {
+            if (oldPassword != null) {
+
+                // Check if the old password is equal to the saved version
+                if (passwordService.verifyHash(oldPassword, passwordFromStorage)) {
+
+                    // Validate the content of password
+                    validatePassword(newPassword, errors);
+                } else {
+                    errors.put("password.old", getMessageSource().getMessage("user.password.old.wrong",
+                            null, getLocale()));
+                }
+
+            } else {
+                errors.put("password.old", getMessageSource().getMessage("user.password.old.empty",
+                        null, getLocale()));
+            }
+        } else {
+            errors.put("password.new", getMessageSource().getMessage("user.password.new.empty",
+                    null, getLocale()));
+        }
+
+        return errors;
+    }
+
+    @Override
     public void validatePassword(String password, Map<String, Object> errors) {
         if (password == null) {
             errors.put("password", getMessageSource().getMessage("user.password.empty",
@@ -137,12 +163,7 @@ public class UserValidator extends AValidator<UserDetailed> {
         }
     }
 
-    /**
-     * Validate initials for user
-     *
-     * @param initials of a user
-     * @param errors   all the errors gathered in process of validation
-     */
+    @Override
     public void validateInitials(Initials initials, Map<String, Object> errors) {
         if (initials != null) {
             String firstName = initials.getFirstName();

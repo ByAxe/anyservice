@@ -6,7 +6,7 @@ import java.util.Map;
 
 import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
-public abstract class AValidator<E> implements IValidator<E> {
+public abstract class AValidator<E> {
 
     protected abstract MessageSource getMessageSource();
 

@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-public interface CRUDController<BRIEF, DETAILED, ID, VERSION> {
+public interface ICRUDController<BRIEF, DETAILED, ID, VERSION> {
     ResponseEntity<?> create(DETAILED dto);
 
     ResponseEntity<?> update(DETAILED dto, ID uuid, VERSION version);

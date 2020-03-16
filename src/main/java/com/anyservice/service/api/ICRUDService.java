@@ -1,8 +1,10 @@
 package com.anyservice.service.api;
 
+import com.anyservice.dto.api.APrimary;
+
 import java.util.Optional;
 
-public interface CRUDService<BRIEF, DETAILED, ID, VERSION> {
+public interface ICRUDService<BRIEF extends APrimary, DETAILED extends APrimary, ID, VERSION> {
     DETAILED create(DETAILED dto);
 
     DETAILED update(DETAILED dto, ID uuid, VERSION version);

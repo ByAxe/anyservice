@@ -12,6 +12,8 @@ public class UserBriefToEntityConverter implements Converter<UserBrief, UserEnti
                 .dtUpdate(source.getDtUpdate())
                 .userName(source.getUserName())
                 .initials(source.getInitials())
+                .role(source.getRole() != null ? source.getRole().name() : null)
+                .state(source.getState() != null ? source.getState().name() : null)
                 .build();
 
         entity.setUuid(source.getUuid());

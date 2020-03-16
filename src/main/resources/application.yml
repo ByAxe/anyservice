@@ -18,6 +18,29 @@ spring:
     multipart:
       max-request-size: 20MB
       max-file-size: 20MB
+  zone:
+    offset:
+      hours: 1
+
+password:
+  rounds: 12
+  length:
+    min: 8
+    max: 50
+
+security:
+  ttl:
+    period: 7200000
+  jwt:
+    universal:
+      password: 706f29cb-a04f-4f1a-9e3f-7ed7fafcf3ba
+    param:
+      token:
+        name: token
+    never: 1691300640540
+    key: LKJIDJFV1aswZ
+    header: JX-TOKEN
+
 #s3:
 #  enable: true
 #  type: amazon
@@ -30,8 +53,3 @@ spring:
 #      bucket: anyservice
 #      region: us-east-1
 #      maxUploadSize: 2147483647
-password:
-  rounds: 12
-  length:
-    min: 8
-    max: 50

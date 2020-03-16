@@ -1,3 +1,4 @@
+...deleted ~19 tasks
 [+] Implement converters
 [+] Register them into configuration
 [+] Implement findFirstByUserName method
@@ -19,16 +20,37 @@
 [+] Cover hash Function with tests
 [+] Cover create and update corner cases with tests
 
-[ ] Add Spring Security to application (https://spring.io/guides/gs/securing-web/)
-[ ] Add comparison of hashes on Log In
+[~] Add Spring Security to application
+    [+] Add "country", "address", "role", "state", "passwordUpdateDate" to sql
+    [+] Add countries dictionary and some values to it
+    [+] Add new fields to Entity, DTO, Converters
+    [+] Add changePassword method
+    [+] Remove password updating from update method (@DynamicUpdate should make it now)
+    [+] Add Spring Security classes for JWT support
+    [+] Add new fields to test_sql
+    [+] Add comparison of hashes on Log In
+    [+] Create SecurityController for logins and working with JWT
+    [+] Make the project compiliable
+    [ ] Make all the tests pass
+    [ ] Add testing passwordUpdateDate to tests
+    [ ] Cover with tests when role || state is null when passed Front -> DB and vise versa
+    [ ] Cover changePassword method
+    [ ] Make sure via tests, that password is not updating by any of update operations
+    [ ] Cover SecurityController with tests
+    [ ] Make all the tests pass
+
+[ ] Create IUserService interface and replace all calls to UserService by IUserService calls
+[ ] Add comments to script.sql & test_script.sql
 [ ] Deploy basic application on Google Cloud
 [ ] Add amazon s3 to application
+[ ] Add countries to UserEntity and all the chain
 [ ] Implement file storage for Users
 [ ] Write documentation for each and every method\class
 [ ] Reach test coverage at least of 85%
 [ ] Replace all the hardcoded messages on one language to MessageSource messages
 [ ] Make the TODO in UserValidator
 [ ] Add function "Restore password"
+[ ] Add Swagger to application
 
 ___
 **Explanations**

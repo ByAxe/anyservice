@@ -30,16 +30,31 @@ comment on column file_description.state is 'Состояние файла (TEMP
 comment on column file_description.summary is 'Сводка об файле';
 comment on column file_description.storage is 'Описание местоположения файла в файловом хранилище';
 
+drop table if exists countries cascade;
+create table if not exists countries
+(
+    uuid    uuid primary key default (md5(((random())::text || (clock_timestamp())::text)))::uuid,
+    country varchar(100) not null unique,
+    alpha2  char(2)      not null unique,
+    alpha3  char(3)      not null unique,
+    number  smallint     not null unique
+);
+
 drop table if exists users cascade;
 create table if not exists users
 (
     uuid                     uuid primary key,
     dt_create                timestamptz not null default now(),
     dt_update                timestamptz not null default now(),
+    password_update_date     timestamptz not null default now(),
     user_name                varchar(50) not null unique,
     initials                 jsonb       not null,
     password                 varchar     not null,
     description              text,
+    country                  uuid references countries,
+    address                  varchar,
+    state                    varchar(50) not null,
+    role                     varchar(50) not null,
     contacts                 jsonb,
     legal_status             varchar(50),
     is_verified              boolean,
@@ -132,3 +147,16 @@ create table if not exists orders_categories
     order_uuid    uuid references orders,
     category_uuid uuid references categories
 );
+
+
+------------------------INSERTS------------------------------------
+INSERT INTO countries (country, alpha2, alpha3, number)
+VALUES ('Poland', 'PL', 'POL', 616),
+       ('Lithuania', 'LT', 'LTU', 440),
+       ('Latvia', 'LV', 'LVA', 428),
+       ('Germany', 'DE', 'DEU', 276),
+       ('Switzerland', 'CH', 'CHE', 756),
+       ('France', 'FR', 'FRA', 250),
+       ('Italy', 'IT', 'ITA', 380),
+       ('Spain', 'ES', 'ESP', 724),
+       ('Sweden', 'SE', 'SWE', 752);

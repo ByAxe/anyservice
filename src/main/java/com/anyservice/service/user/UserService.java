@@ -1,12 +1,15 @@
-package com.anyservice.service;
+package com.anyservice.service.user;
 
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
+import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.UserEntity;
 import com.anyservice.repository.UserRepository;
-import com.anyservice.service.api.CRUDService;
+import com.anyservice.service.api.ICRUDService;
 import com.anyservice.service.api.IPasswordService;
-import com.anyservice.service.validators.api.IValidator;
+import com.anyservice.service.validators.api.user.IUserValidator;
+import com.anyservice.web.security.exceptions.UserNotFoundException;
+import com.anyservice.web.security.exceptions.WrongPasswordException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,21 +23,22 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 import static com.anyservice.core.DateUtils.convertOffsetDateTimeToMills;
+import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 @Service
 @Transactional(readOnly = true)
-public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, Date> {
+public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, Date> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final ConversionService conversionService;
-    private final IValidator<UserDetailed> userValidator;
+    private final IUserValidator<UserDetailed> userValidator;
     private final IPasswordService passwordService;
     private final MessageSource messageSource;
 
     public UserService(UserRepository userRepository, ConversionService conversionService,
-                       IValidator<UserDetailed> userValidator, IPasswordService passwordService,
+                       IUserValidator<UserDetailed> userValidator, IPasswordService passwordService,
                        MessageSource messageSource) {
         this.userRepository = userRepository;
         this.conversionService = conversionService;
@@ -70,10 +74,11 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
 
         entity.setPassword(hash);
 
-        // Set dtCreate and dtUpdate at NOW
+        // Set system fields
         entity.setUuid(UUID.randomUUID());
         entity.setDtCreate(OffsetDateTime.now());
         entity.setDtUpdate(OffsetDateTime.now());
+        entity.setPasswordUpdateDate(OffsetDateTime.now());
 
         // Save new user
         UserEntity savedEntity = userRepository.save(entity);
@@ -85,7 +90,6 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
     @Override
     @Transactional
     public UserDetailed update(UserDetailed user, UUID uuid, Date version) {
-
         // Check if such user exists
         if (!existsById(uuid)) {
             String message = messageSource.getMessage("user.not.exists",
@@ -131,18 +135,52 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
             throw new RuntimeException(message);
         }
 
-        // Set a new password if it's updated too
-        String password = user.getPassword();
-        if (password == null || password.isEmpty()) {
-            // set new a password to the user
-            String hash = passwordService.hash(password);
-
-            entity.setPassword(hash);
-        }
-
         // Save updated user to DB
         UserEntity savedEntity = userRepository.save(entity);
         return conversionService.convert(savedEntity, UserDetailed.class);
+    }
+
+    @Transactional
+    public UserDetailed changePassword(UserForChangePassword userWithPassword) {
+
+        // Check if uuid is present
+        UUID uuid = userWithPassword.getUuid();
+        if (uuid == null) {
+            String message = messageSource.getMessage("uuid.empty",
+                    null, LocaleContextHolder.getLocale());
+            logger.info(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        UserDetailed versionOfUserFromDB = findByIdWithPassword(uuid).get();
+
+        // Check if such user exists
+        if (!existsById(uuid)) {
+            String message = messageSource.getMessage("user.not.exists",
+                    null, LocaleContextHolder.getLocale());
+            logger.info(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        // Validate the password for change
+        Map<String, Object> errors = userValidator.validatePasswordForChange(userWithPassword.getNewPassword(),
+                userWithPassword.getOldPassword(), versionOfUserFromDB.getPassword());
+
+        // If any errors - show it to the user
+        if (!errors.isEmpty()) {
+            logger.info(StringUtils.join(errors));
+            throw new IllegalArgumentException(errors.toString());
+        }
+
+        // At this moment, we know that everything is fine change the password
+        versionOfUserFromDB.setPassword(userWithPassword.getNewPassword());
+
+        OffsetDateTime dtUpdate = versionOfUserFromDB.getDtUpdate();
+        versionOfUserFromDB.setPasswordUpdateDate(dtUpdate);
+
+        // If everything is ok - update the user
+        Date version = new Date(convertOffsetDateTimeToMills(dtUpdate));
+        return update(versionOfUserFromDB, uuid, version);
     }
 
     @Override
@@ -236,5 +274,46 @@ public class UserService implements CRUDService<UserBrief, UserDetailed, UUID, D
     @Transactional
     public void deleteAll() {
         userRepository.deleteAll();
+    }
+
+
+    /**
+     * Returns user if the userName and password are correct
+     *
+     * @param userName userName of a user
+     * @param password password of a user
+     * @return user
+     * @throws UserNotFoundException  if user was not found by specified userName
+     * @throws WrongPasswordException if password if verification of hash was unsuccessful
+     */
+    public UserDetailed findUserForLogin(String userName, String password) {
+        UserDetailed user = findByUserName(userName);
+
+        if (user == null) {
+            throw new UserNotFoundException(messageSource.getMessage("security.controller.login.user.not.found",
+                    null, LocaleContextHolder.getLocale()));
+        }
+
+        // Check whether password is correct by verifying the hash
+        boolean verificationSuccessful = passwordService.verifyHash(password, user.getPassword());
+
+        if (!verificationSuccessful) {
+            throw new WrongPasswordException(messageSource.getMessage("security.controller.login.password.wrong",
+                    null, getLocale()));
+        }
+
+        return user;
+    }
+
+    /**
+     * Finds user by its userName
+     *
+     * @param userName of a user
+     * @return user found by userName
+     */
+    public UserDetailed findByUserName(String userName) {
+        UserEntity user = userRepository.findFirstByUserName(userName);
+
+        return conversionService.convert(user, UserDetailed.class);
     }
 }

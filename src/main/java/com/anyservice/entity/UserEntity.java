@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
@@ -20,6 +21,7 @@ import java.time.OffsetDateTime;
 @Entity
 @SuperBuilder
 @Table(name = "users")
+@DynamicUpdate
 public class UserEntity extends EntityWithUUID {
 
     @Column(name = "dt_create")
@@ -28,7 +30,8 @@ public class UserEntity extends EntityWithUUID {
     @Column(name = "dt_update")
     private OffsetDateTime dtUpdate;
 
-    private String description;
+    @Column(name = "password_update_date")
+    private OffsetDateTime passwordUpdateDate;
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
@@ -51,4 +54,9 @@ public class UserEntity extends EntityWithUUID {
     private String userName;
 
     private String password;
+    private String description;
+    private String address;
+    private String state;
+    private String role;
+
 }

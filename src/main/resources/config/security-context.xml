@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns="http://www.springframework.org/schema/security"
+             xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--In this line, we activate @PreFilter, @PreAuthorize, @PostFilter, @PostAuthorize annotations on any spring beans in the context-->
+    <global-method-security pre-post-annotations="enabled"/>
+
+    <!-- Next, we define the filter chain applied to all requests while adding two important configs: Entry point reference and setting the session creation to stateless (we do not want the session created for security purposes as we are using tokens for each request)-->
+    <http name="mainJwtFilter" entry-point-ref="restAuthenticationEntryPoint" create-session="stateless"
+          use-expressions="true">
+        <!--We do not need csrf protection because our tokens are immune to it-->
+        <csrf disabled="true"/>
+
+        <!--Next, we plug in our special authentication filter within the Spring’s predefined filter chain, just before the form login filter-->
+        <custom-filter before="FORM_LOGIN_FILTER" ref="jwtAuthenticationFilter"/>
+
+        <anonymous enabled="true"/>
+
+        <intercept-url pattern="/**/generate/infinite/token" access="hasRole('ROLE_ADMIN')" method="POST"/>
+
+        <!-- ==========>>>>>>> Authentication -->
+        <intercept-url pattern="/**/signup" access="isAnonymous()"/>
+        <intercept-url pattern="/**/login" access="isAnonymous()"/>
+        <intercept-url pattern="/actuator/**" access="permitAll()"/>
+        <intercept-url pattern="/api/**" access="permitAll()"/>
+
+        <!-- ==========>>>>>>> read  -->
+        <intercept-url pattern="/**/user/**" access="isAuthenticated()" method="GET"/>
+        <!-- ==========>>>>>>> read  -->
+
+        <!-- ==========>>>>>>> create  -->
+        <intercept-url pattern="/**/user/**" access="hasAnyRole('ROLE_ADMIN')" method="POST"/>
+        <!-- ==========>>>>>>> create  -->
+
+        <!-- ==========>>>>>>> update  -->
+        <intercept-url pattern="/**/user/**" access="isAuthenticated()" method="PUT"/>
+        <!-- ==========>>>>>>> update  -->
+
+        <!-- ==========>>>>>>> delete  -->
+        <intercept-url pattern="/**/user/**" access="hasAnyRole('ROLE_ADMIN')" method="DELETE"/>
+        <!-- ==========>>>>>>> delete  -->
+
+    </http>
+
+    <!--This bean is the declaration of our authentication filter; since it is extending Spring’s AbstractAuthenticationProcessingFilter, we need to declare it in XML to wire its properties (auto wire does not work here). We will explain later what the filter does-->
+    <beans:bean id="jwtAuthenticationFilter" class="com.anyservice.web.security.JwtAuthenticationFilter">
+        <beans:property name="authenticationManager" ref="authenticationManager"/>
+        <!--The default success handler of AbstractAuthenticationProcessingFilter is not good enough for REST purposes because it redirects the user to a success page; that is why we set our own here-->
+        <beans:property name="authenticationSuccessHandler" ref="jwtAuthenticationSuccessHandler"/>
+    </beans:bean>
+
+    <authentication-manager alias="authenticationManager">
+        <!--The declaration of the provider created by the authenticationManager is used by our filter to authenticate users-->
+        <authentication-provider ref="jwtAuthenticationProvider"/>
+    </authentication-manager>
+
+</beans:beans>

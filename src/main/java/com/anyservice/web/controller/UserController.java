@@ -2,13 +2,15 @@ package com.anyservice.web.controller;
 
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
-import com.anyservice.service.UserService;
-import com.anyservice.web.controller.api.CRUDController;
+import com.anyservice.dto.user.UserForChangePassword;
+import com.anyservice.service.user.UserService;
+import com.anyservice.web.controller.api.ICRUDController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -22,7 +24,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/api/v1/user")
-public class UserController implements CRUDController<UserBrief, UserDetailed, UUID, Long> {
+public class UserController implements ICRUDController<UserBrief, UserDetailed, UUID, Long> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
@@ -72,6 +74,15 @@ public class UserController implements CRUDController<UserBrief, UserDetailed, U
         HttpHeaders httpHeaders = new HttpHeaders();
 
         return new ResponseEntity<>(updatedUser, httpHeaders, OK);
+    }
+
+    @PutMapping("/change/password")
+    public ResponseEntity<?> changePassword(@RequestBody UserForChangePassword user) {
+        UserDetailed userDetailed = userService.changePassword(user);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        return new ResponseEntity<>(userDetailed, httpHeaders, HttpStatus.OK);
     }
 
     @Override

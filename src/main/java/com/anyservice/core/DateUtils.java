@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.Date;
 import java.util.Optional;
 
@@ -212,4 +209,15 @@ public class DateUtils {
         return dateTime.toInstant().toEpochMilli();
     }
 
+    /**
+     * Converts time in mills to {@link OffsetDateTime} for chosen zone
+     *
+     * @param mills      time in milliseconds from the beginning of epoch
+     * @param zoneOffset zone offset in hours from UTC+0
+     *                   For example: to get CET time we need to pass zoneOffset=1 UTC+1, because CET == UTC+1
+     * @return {@link OffsetDateTime} for specified zone
+     */
+    public static OffsetDateTime convertLongToOffsetDateTime(Long mills, int zoneOffset) {
+        return new Date(mills).toInstant().atOffset(ZoneOffset.ofHours(zoneOffset));
+    }
 }

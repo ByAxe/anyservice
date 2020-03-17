@@ -1,6 +1,6 @@
 package com.anyservice.repository;
 
-import com.anyservice.entity.UserEntity;
+import com.anyservice.entity.user.UserEntity;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 

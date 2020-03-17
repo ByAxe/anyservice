@@ -4,7 +4,7 @@ import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.core.enums.UserRole;
 import com.anyservice.core.enums.UserState;
 import com.anyservice.dto.user.UserDetailed;
-import com.anyservice.entity.UserEntity;
+import com.anyservice.entity.user.UserEntity;
 import org.springframework.core.convert.converter.Converter;
 
 public class UserEntityToDetailedConverter implements Converter<UserEntity, UserDetailed> {

@@ -3,7 +3,7 @@ package com.anyservice.dto.user;
 import com.anyservice.core.enums.UserRole;
 import com.anyservice.core.enums.UserState;
 import com.anyservice.dto.api.APrimary;
-import com.anyservice.entity.Initials;
+import com.anyservice.entity.user.Initials;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

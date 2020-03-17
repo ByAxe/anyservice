@@ -3,7 +3,7 @@ package com.anyservice.service.converters.user.entity_dto;
 import com.anyservice.core.enums.UserRole;
 import com.anyservice.core.enums.UserState;
 import com.anyservice.dto.user.UserBrief;
-import com.anyservice.entity.UserEntity;
+import com.anyservice.entity.user.UserEntity;
 import org.springframework.core.convert.converter.Converter;
 
 public class UserEntityToBriefConverter implements Converter<UserEntity, UserBrief> {

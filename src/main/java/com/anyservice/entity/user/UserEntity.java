@@ -1,4 +1,4 @@
-package com.anyservice.entity;
+package com.anyservice.entity.user;
 
 import com.anyservice.entity.api.EntityWithUUID;
 import lombok.AllArgsConstructor;
@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 
@@ -22,6 +23,7 @@ import java.time.OffsetDateTime;
 @SuperBuilder
 @Table(name = "users")
 @DynamicUpdate
+@DynamicInsert
 public class UserEntity extends EntityWithUUID {
 
     @Column(name = "dt_create")

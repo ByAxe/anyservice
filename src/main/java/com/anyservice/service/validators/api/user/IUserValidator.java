@@ -1,6 +1,6 @@
 package com.anyservice.service.validators.api.user;
 
-import com.anyservice.entity.Initials;
+import com.anyservice.entity.user.Initials;
 import com.anyservice.service.validators.api.IValidator;
 
 import java.util.Map;

@@ -31,13 +31,14 @@
     [+] Add comparison of hashes on Log In
     [+] Create SecurityController for logins and working with JWT
     [+] Make the project compiliable
-    [ ] Make all the tests pass
+    [+] Make all the tests pass
     [ ] Add testing passwordUpdateDate to tests
     [ ] Cover with tests when role || state is null when passed Front -> DB and vise versa
     [ ] Cover changePassword method
     [ ] Make sure via tests, that password is not updating by any of update operations
     [ ] Cover SecurityController with tests
     [ ] Make all the tests pass
+    [ ] Merge spring-security branch into master
 
 [ ] Create IUserService interface and replace all calls to UserService by IUserService calls
 [ ] Add comments to script.sql & test_script.sql

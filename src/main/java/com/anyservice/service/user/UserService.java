@@ -1,9 +1,11 @@
 package com.anyservice.service.user;
 
+import com.anyservice.core.enums.UserRole;
+import com.anyservice.core.enums.UserState;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
-import com.anyservice.entity.UserEntity;
+import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
 import com.anyservice.service.api.ICRUDService;
 import com.anyservice.service.api.IPasswordService;
@@ -75,16 +77,28 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         entity.setPassword(hash);
 
         // Set system fields
-        entity.setUuid(UUID.randomUUID());
-        entity.setDtCreate(OffsetDateTime.now());
-        entity.setDtUpdate(OffsetDateTime.now());
-        entity.setPasswordUpdateDate(OffsetDateTime.now());
+        setRequiredFieldsToEntity(entity);
 
         // Save new user
         UserEntity savedEntity = userRepository.save(entity);
 
         // Return saved user back
         return conversionService.convert(savedEntity, UserDetailed.class);
+    }
+
+    private void setRequiredFieldsToEntity(UserEntity entity) {
+        UUID uuid = UUID.randomUUID();
+        entity.setUuid(uuid);
+
+        OffsetDateTime now = OffsetDateTime.now();
+
+        entity.setDtCreate(now);
+        entity.setDtUpdate(now);
+
+        entity.setPasswordUpdateDate(now);
+
+        entity.setRole(UserRole.ROLE_USER.name());
+        entity.setState(UserState.ACTIVE.name());
     }
 
     @Override
@@ -172,7 +186,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
             throw new IllegalArgumentException(errors.toString());
         }
 
-        // At this moment, we know that everything is fine change the password
+        // At this moment, we know that everything is fine
         versionOfUserFromDB.setPassword(userWithPassword.getNewPassword());
 
         OffsetDateTime dtUpdate = versionOfUserFromDB.getDtUpdate();

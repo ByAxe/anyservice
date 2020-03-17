@@ -1,4 +1,4 @@
-package com.anyservice.entity;
+package com.anyservice.entity.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

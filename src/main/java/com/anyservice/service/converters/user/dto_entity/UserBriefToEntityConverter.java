@@ -1,7 +1,7 @@
 package com.anyservice.service.converters.user.dto_entity;
 
 import com.anyservice.dto.user.UserBrief;
-import com.anyservice.entity.UserEntity;
+import com.anyservice.entity.user.UserEntity;
 import org.springframework.core.convert.converter.Converter;
 
 public class UserBriefToEntityConverter implements Converter<UserBrief, UserEntity> {

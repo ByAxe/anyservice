@@ -28,13 +28,13 @@ public interface IUserValidator<USER> extends IValidator<USER> {
     /**
      * Validation of password for change
      *
-     * @param oldPassword         the old password of user
-     * @param newPassword         the new password of user
-     * @param passwordFromStorage the saved password from some storage
+     * @param oldPassword        the old password of user
+     * @param newPassword        the new password of user
+     * @param passwordHashFromDB the saved hash of a password from some storage
      * @return errors obtained during validation
      */
     Map<String, Object> validatePasswordForChange(String oldPassword, String newPassword,
-                                                  String passwordFromStorage);
+                                                  String passwordHashFromDB);
 
     /**
      * Validate initials for user

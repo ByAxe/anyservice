@@ -108,23 +108,30 @@ public class UserValidator extends AUserValidator<UserDetailed> {
 
     @Override
     public Map<String, Object> validatePasswordForChange(String oldPassword, String newPassword,
-                                                         String passwordFromStorage) {
+                                                         String passwordHashFromDB) {
         Map<String, Object> errors = new HashMap<>();
 
         // Check presence of new and old passwords
         if (newPassword != null) {
             if (oldPassword != null) {
 
-                // Check if the old password is equal to the saved version
-                if (passwordService.verifyHash(oldPassword, passwordFromStorage)) {
+                // If new password is not equal to old one
+                if (!oldPassword.equals(newPassword)) {
 
-                    // Validate the content of password
-                    validatePassword(newPassword, errors);
+                    // Check if the entered version of "oldPassword" is equal to the saved version
+                    if (passwordService.verifyHash(oldPassword, passwordHashFromDB)) {
+
+                        // Validate the content of password
+                        validatePassword(newPassword, errors);
+
+                    } else {
+                        errors.put("password.old", getMessageSource().getMessage("user.password.old.wrong",
+                                null, getLocale()));
+                    }
                 } else {
-                    errors.put("password.old", getMessageSource().getMessage("user.password.old.wrong",
+                    errors.put("password.old.new", getMessageSource().getMessage("user.password.old.equal.new",
                             null, getLocale()));
                 }
-
             } else {
                 errors.put("password.old", getMessageSource().getMessage("user.password.old.empty",
                         null, getLocale()));

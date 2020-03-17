@@ -128,6 +128,8 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         // Set all the system fields
         user.setUuid(versionOfUserFromDB.getUuid());
         user.setDtCreate(versionOfUserFromDB.getDtCreate());
+        user.setRole(versionOfUserFromDB.getRole());
+        user.setState(versionOfUserFromDB.getState());
         user.setDtUpdate(OffsetDateTime.now());
 
         // Validate user

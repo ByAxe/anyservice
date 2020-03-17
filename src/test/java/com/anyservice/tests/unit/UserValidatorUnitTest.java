@@ -5,6 +5,7 @@ import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
+import com.anyservice.service.api.IPasswordService;
 import com.anyservice.service.validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
@@ -23,6 +24,9 @@ public class UserValidatorUnitTest extends TestConfig {
 
     @Autowired
     private UserValidator userValidator;
+
+    @Autowired
+    private IPasswordService passwordService;
 
     /**
      * Fist parameter - User
@@ -232,6 +236,29 @@ public class UserValidatorUnitTest extends TestConfig {
         };
     }
 
+    @DataProvider
+    public static Object[][] passwordForChangeValidationDataProvider() {
+        return new Object[][]{
+                // everything is null - wait for fail
+                {null, null, null, FAIL},
+
+                // "oldPassword" is null - wait for fail
+                {null, randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH), randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH), FAIL},
+
+                // "newPassword" is null - wait for fail
+                {randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH), null, randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH), FAIL},
+
+                // "newPassword" is null, and although "old" is correct - wait for fail
+                {"1234567890", null, "1234567890", FAIL},
+
+                // Change password on the same one - wait for fail
+                {"1234567890", "1234567890", "1234567890", FAIL},
+
+                // wait for success
+                {"1234567890", "123456789", "1234567890", SUCCESS},
+        };
+    }
+
     @Test(dataProvider = "createValidationDataProvider")
     public void createValidationTest(UserDetailed user, boolean expected) {
         Map<String, Object> errors = userValidator.validateCreation(user);
@@ -289,6 +316,21 @@ public class UserValidatorUnitTest extends TestConfig {
         Map<String, Object> errors = new HashMap<>();
 
         userValidator.validateUserName(userName, userUuid, errors);
+
+        boolean actual = errors.isEmpty();
+
+        Assert.assertEquals(actual, expected);
+    }
+
+    @Test(dataProvider = "passwordForChangeValidationDataProvider")
+    public void passwordForChangeValidationTest(String oldPassword, String newPassword, String passwordFromDB,
+                                                boolean expected) {
+        // Hash the password
+        String passwordHashFromDB = passwordService.hash(passwordFromDB);
+
+        // Test the method
+        Map<String, Object> errors;
+        errors = userValidator.validatePasswordForChange(oldPassword, newPassword, passwordHashFromDB);
 
         boolean actual = errors.isEmpty();
 

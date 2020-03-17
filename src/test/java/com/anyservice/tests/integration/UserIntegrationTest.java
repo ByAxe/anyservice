@@ -258,4 +258,9 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .contentType(getContentType()))
                 .andExpect(status().isBadRequest());
     }
+
+    //    @Test
+    public void changePasswordTest() {
+
+    }
 }

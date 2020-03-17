@@ -8,7 +8,7 @@
     <!--In this line, we activate @PreFilter, @PreAuthorize, @PostFilter, @PostAuthorize annotations on any spring beans in the context-->
     <global-method-security pre-post-annotations="enabled"/>
 
-    <!-- Next, we define the filter chain applied to all requests while adding two important configs: Entry point reference and setting the session creation to stateless (we do not want the session created for security purposes as we are using tokens for each request)-->
+    <!-- Next, we define the filter chain applied to all requests while adding two important configs: Entry point reference and setting the session creation to stateless (we do not want the session detailedWrapper for security purposes as we are using tokens for each request)-->
     <http name="mainJwtFilter" entry-point-ref="restAuthenticationEntryPoint" create-session="stateless"
           use-expressions="true">
         <!--We do not need csrf protection because our tokens are immune to it-->
@@ -53,7 +53,7 @@
     </beans:bean>
 
     <authentication-manager alias="authenticationManager">
-        <!--The declaration of the provider created by the authenticationManager is used by our filter to authenticate users-->
+        <!--The declaration of the provider detailedWrapper by the authenticationManager is used by our filter to authenticate users-->
         <authentication-provider ref="jwtAuthenticationProvider"/>
     </authentication-manager>
 

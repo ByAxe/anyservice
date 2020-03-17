@@ -4,15 +4,20 @@ import com.anyservice.api.ICRUDTest;
 import com.anyservice.config.TestConfig;
 import com.anyservice.core.DateUtils;
 import com.anyservice.core.enums.LegalStatus;
+import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.api.APrimary;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
+import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
+import com.anyservice.service.api.IPasswordService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -22,12 +27,18 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.anyservice.core.RandomValuesGenerator.*;
+import static com.anyservice.core.TestingUtilityClass.PASSWORD_MAX_LENGTH;
+import static com.anyservice.core.TestingUtilityClass.PASSWORD_MIN_LENGTH;
 import static org.apache.commons.lang3.RandomStringUtils.random;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBrief, UserDetailed> {
+
+    @Autowired
+    private IPasswordService passwordService;
 
     private String baseUrl = "/";
 
@@ -68,26 +79,26 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     }
 
     @Override
-    public void assertEqualsDetailed(UserDetailed detailed, UserDetailed otherDetailed) {
-        Assert.assertEquals(detailed.getInitials(), otherDetailed.getInitials());
-        Assert.assertEquals(detailed.getContacts(), otherDetailed.getContacts());
-        Assert.assertEquals(detailed.getUserName(), otherDetailed.getUserName());
-        Assert.assertEquals(detailed.getDescription(), otherDetailed.getDescription());
-        Assert.assertEquals(detailed.getIsLegalStatusVerified(), otherDetailed.getIsLegalStatusVerified());
-        Assert.assertEquals(detailed.getIsVerified(), otherDetailed.getIsVerified());
-        Assert.assertEquals(detailed.getLegalStatus(), otherDetailed.getLegalStatus());
+    public void assertEqualsDetailed(UserDetailed actual, UserDetailed expected) {
+        Assert.assertEquals(actual.getInitials(), expected.getInitials());
+        Assert.assertEquals(actual.getContacts(), expected.getContacts());
+        Assert.assertEquals(actual.getUserName(), expected.getUserName());
+        Assert.assertEquals(actual.getDescription(), expected.getDescription());
+        Assert.assertEquals(actual.getIsLegalStatusVerified(), expected.getIsLegalStatusVerified());
+        Assert.assertEquals(actual.getIsVerified(), expected.getIsVerified());
+        Assert.assertEquals(actual.getLegalStatus(), expected.getLegalStatus());
     }
 
     @Override
-    public void assertEqualsListBrief(List<UserBrief> briefList, List<UserBrief> otherBriefList) {
-        briefList.sort(Comparator.comparing(UserBrief::getUserName));
-        otherBriefList.sort(Comparator.comparing(UserBrief::getUserName));
+    public void assertEqualsListBrief(List<UserBrief> actualList, List<UserBrief> expectedList) {
+        actualList.sort(Comparator.comparing(UserBrief::getUserName));
+        expectedList.sort(Comparator.comparing(UserBrief::getUserName));
 
-        Assert.assertEquals(briefList.size(), otherBriefList.size());
+        Assert.assertEquals(actualList.size(), expectedList.size());
 
-        for (int element = 0; element < briefList.size(); element++) {
-            UserBrief user = briefList.get(element);
-            UserBrief otherUser = otherBriefList.get(element);
+        for (int element = 0; element < actualList.size(); element++) {
+            UserBrief user = actualList.get(element);
+            UserBrief otherUser = expectedList.get(element);
 
             Assert.assertEquals(user.getInitials(), otherUser.getInitials());
             Assert.assertEquals(user.getUserName(), otherUser.getUserName());
@@ -155,51 +166,35 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         ICRUDTest.super.createAndFindAllByIdListTest();
     }
 
+    /**
+     * Create two users and then change user name of first on the userName of already existing user (second user)
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     @Test
     public void userNameValidationTest_changeOnExistingUserName() throws Exception {
         String userNameOfFirstUser = randomString(1, 50);
         String userNameOfSecondUser = randomString(1, 50);
 
-        // Create first user
+        // Build the first user
         UserDetailed firstUser = createNewItem();
         firstUser.setUserName(userNameOfFirstUser);
 
-        String firstUserAsString = getObjectMapper().writeValueAsString(firstUser);
+        // Create first user in DB
+        DetailedWrapper<UserDetailed> firstUserWrapper = create(firstUser);
 
-        String headerLocation = getMockMvc().perform(post(getExtendedUrl())
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(firstUserAsString))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getHeader("Location");
+        // Get it uuid
+        UUID uuidOfFirstUser = firstUserWrapper.getUuid();
 
-        UUID uuidOfFirstUser = getUuidFromHeaderLocation(headerLocation);
-
-        // Create the second user
+        // Build the second user
         UserDetailed secondUser = createNewItem();
         secondUser.setUserName(userNameOfSecondUser);
 
-        String secondUserAsString = getObjectMapper().writeValueAsString(secondUser);
-
-        getMockMvc().perform(post(getExtendedUrl())
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(secondUserAsString))
-                .andExpect(status().isCreated());
+        // Create second user in DB
+        DetailedWrapper<UserDetailed> secondUserWrapper = create(secondUser);
 
         // Select the first user
-        String contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuidOfFirstUser)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        UserDetailed obtainedResult = getObjectMapper().readValue(contentAsString,
-                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+        UserDetailed obtainedResult = select(uuidOfFirstUser);
 
         // Assert its uuid's are equal
         Assert.assertEquals(obtainedResult.getUuid(), uuidOfFirstUser);
@@ -220,34 +215,33 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Removing non-existing user
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     @Test
     public void deleteNotExistingUser() throws Exception {
         UUID uuid = UUID.randomUUID();
         long version = new Date().getTime();
 
+        // Wait for fail when removing non-existing user
         getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
                 .headers(getHeaders())
                 .contentType(getContentType()))
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Removing user with wrong version and expecting fail
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     @Test
     public void deleteUserWithWrongVersion() throws Exception {
         // Create user
-        UserDetailed firstUser = createNewItem();
-
-        String firstUserAsString = getObjectMapper().writeValueAsString(firstUser);
-
-        String headerLocation = getMockMvc().perform(post(getExtendedUrl())
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(firstUserAsString))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getHeader("Location");
-
-        UUID uuid = getUuidFromHeaderLocation(headerLocation);
+        DetailedWrapper<UserDetailed> userWrapper = create();
+        UUID uuid = userWrapper.getUuid();
 
         // Set wrong version
         long version = new Date().getTime() + 100_000;
@@ -259,8 +253,92 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Create user then change its password and make sure it's actually changed
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    @Test
+    public void changePasswordTest() throws Exception {
+        // Prepare result matchers
+        ResultMatcher expectOk = status().isOk();
+        ResultMatcher expectBadRequest = status().isBadRequest();
+
+        // Generate password
+        String password = randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+
+        // Build a user
+        UserDetailed user = createNewItem();
+        user.setPassword(password);
+
+        // Create user
+        DetailedWrapper<UserDetailed> userWrapper = create(user);
+
+        // Get uuid of created user
+        UUID uuid = userWrapper.getUuid();
+
+        // Generate a new password for the user
+        String newPassword = randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+
+        // Change password for the first time
+        UserForChangePassword userForChangePassword = changePassword(uuid, password, newPassword, expectOk);
+
+        // Try to change it again, and expect error because password has already changed
+        changePassword(userForChangePassword, expectBadRequest);
+
+        // Change password one more time, but this time expect that password already changed,
+        // so that previous "newPassword" becomes "oldPassword" for this operation
+        password = newPassword;
+
+        // Generate a new password for the second change
+        newPassword = randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+
+        // Change password the second time but expect success now, because everything is correct
+        changePassword(uuid, password, newPassword, expectOk);
+    }
+
+    private UserForChangePassword changePassword(UUID uuid, String password, String newPassword,
+                                                 ResultMatcher resultMatcher) throws Exception {
+        // Build a special object, required for the second password change operation
+        UserForChangePassword userForChangePassword = UserForChangePassword.builder()
+                .uuid(uuid)
+                .oldPassword(password)
+                .newPassword(newPassword)
+                .build();
+
+        // Change password
+        changePassword(userForChangePassword, resultMatcher);
+
+        return userForChangePassword;
+    }
+
+    private void changePassword(UserForChangePassword userForChangePassword,
+                                ResultMatcher resultMatcher) throws Exception {
+        String valueAsString = getObjectMapper().writeValueAsString(userForChangePassword);
+
+        getMockMvc().perform(put(getExtendedUrl() + "/change/password")
+                .headers(getHeaders())
+                .contentType(getContentType())
+                .content(valueAsString))
+                .andExpect(resultMatcher);
+    }
+
     //    @Test
-    public void changePasswordTest() {
+    public void getUserWithoutPassword() throws Exception {
+        // Create user
+
+        // Find user by id
+
+        // make sure password is null
+    }
+
+    //    @Test
+    public void updateUserButPasswordMustNotChange() throws Exception {
+        // Create user
+
+        // Update user
+
+        // Make sure password did not change
 
     }
 }

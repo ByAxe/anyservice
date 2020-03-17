@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -78,11 +77,19 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
 
     @PutMapping("/change/password")
     public ResponseEntity<?> changePassword(@RequestBody UserForChangePassword user) {
-        UserDetailed userDetailed = userService.changePassword(user);
+        UserDetailed userDetailed;
+
+        try {
+            userDetailed = userService.changePassword(user);
+        } catch (Exception e) {
+            logger.info(messageSource.getMessage("user.change.password",
+                    null, LocaleContextHolder.getLocale()));
+            throw e;
+        }
 
         HttpHeaders httpHeaders = new HttpHeaders();
 
-        return new ResponseEntity<>(userDetailed, httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(userDetailed, httpHeaders, OK);
     }
 
     @Override

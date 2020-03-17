@@ -1,0 +1,290 @@
+package com.anyservice.api;
+
+import com.anyservice.dto.DetailedWrapper;
+import com.anyservice.dto.api.APrimary;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.testng.Assert;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrimary> {
+
+    /**
+     * Object through that all the queries is made
+     *
+     * @return {@link MockMvc}
+     */
+    MockMvc getMockMvc();
+
+    /**
+     * Required content type of all queries
+     *
+     * @return JSON {@link MediaType}
+     */
+    MediaType getContentType();
+
+    /**
+     * Configured and autowired {@link ObjectMapper}
+     *
+     * @return configured {@link ObjectMapper}
+     */
+    ObjectMapper getObjectMapper();
+
+    /**
+     * Target object representation for lists
+     *
+     * @return {@link BRIEF}
+     */
+    Class<? extends APrimary> getBriefClass();
+
+    /**
+     * Target object representation for single queries
+     *
+     * @return {@link DETAILED}
+     */
+    Class<? extends APrimary> getDetailedClass();
+
+    /**
+     * Assertion for two {@link DETAILED} object to be equal
+     *
+     * @param actual   detailed
+     * @param expected detailed
+     */
+    void assertEqualsDetailed(DETAILED actual, DETAILED expected);
+
+    /**
+     * Assertion for two {@link BRIEF} lists of objects to be equal (in all meanings)
+     *
+     * @param actualList   of briefs
+     * @param expectedList of briefs
+     */
+    void assertEqualsListBrief(List<BRIEF> actualList, List<BRIEF> expectedList);
+
+    /**
+     * Method that encapsulates creation of {@link DETAILED} item
+     *
+     * @return created & fulfilled new {@link DETAILED}
+     */
+    DETAILED createNewItem();
+
+    /**
+     * Get url prefix specific for current version
+     *
+     * @return url as {@link String}
+     */
+    String getUrlPrefix();
+
+    /**
+     * URL for the target controller to be tested
+     *
+     * @return url as {@link String}
+     */
+    String getUrl();
+
+    /**
+     * Extends URL with some common prefix
+     *
+     * @return extended url as {@link String}
+     */
+    default String getExtendedUrl() {
+        return getUrlPrefix() + getUrl();
+    }
+
+    /**
+     * Common operation to get UUID from a raw header "Location"
+     *
+     * @param headerLocation content of header
+     * @return {@link UUID}
+     */
+    default UUID getUuidFromHeaderLocation(String headerLocation) {
+        Assert.assertNotNull(headerLocation);
+
+        final int offset = 36;
+
+        // Get uuid from header
+        return UUID.fromString(headerLocation.substring(headerLocation.length() - offset));
+    }
+
+    /**
+     * One method to add some custom headers if it is required
+     *
+     * @return {@link HttpHeaders} object with or without custom headers
+     */
+    default HttpHeaders getHeaders() {
+        return new HttpHeaders();
+    }
+
+    /**
+     * Create {@link DETAILED} and return special object, containing necessary data after creation
+     *
+     * @return special object, containing necessary data after creation
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default DetailedWrapper<DETAILED> create() throws Exception {
+        return create(createNewItem());
+    }
+
+    /**
+     * Creates {@link DETAILED} and return special object, containing necessary data after creation
+     *
+     * @param detailed that must be created
+     * @return special object, containing necessary data after creation
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default DetailedWrapper<DETAILED> create(DETAILED detailed) throws Exception {
+        String customerAsString = getObjectMapper().writeValueAsString(detailed);
+
+        String headerLocation = getMockMvc().perform(post(getExtendedUrl())
+                .headers(getHeaders())
+                .contentType(getContentType())
+                .content(customerAsString))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getHeader("Location");
+
+        UUID uuid = getUuidFromHeaderLocation(headerLocation);
+
+        return DetailedWrapper.<DETAILED>builder().detailed(detailed).uuid(uuid).build();
+    }
+
+    /**
+     * Updates object with passed identifiers
+     *
+     * @param uuid    identifier
+     * @param version actual version of it
+     * @return created detailed
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default DETAILED update(UUID uuid, long version) throws Exception {
+        DETAILED detailed = createNewItem();
+        update(detailed, uuid, version);
+        return detailed;
+    }
+
+    /**
+     * Updates given {@link DETAILED}
+     *
+     * @param detailed updated object
+     * @param uuid     identifier
+     * @param version  actual version of it
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default void update(DETAILED detailed, UUID uuid, long version) throws Exception {
+        String updatedItemAsString = getObjectMapper().writeValueAsString(detailed);
+
+        getMockMvc().perform(put(getExtendedUrl() + "/" + uuid + "/version/" + version)
+                .headers(getHeaders())
+                .contentType(getContentType())
+                .content(updatedItemAsString))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Selects {@link DETAILED} by passed uuid
+     *
+     * @param uuid {@link DETAILED} identifier
+     * @return {@link DETAILED} with passed uuid
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default DETAILED select(UUID uuid) throws Exception {
+        String contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return getObjectMapper().readValue(contentAsString,
+                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+    }
+
+    /**
+     * Selects all briefs by given list of uuid
+     *
+     * @param uuidList identifiers list
+     * @return list of briefs
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default List<BRIEF> selectAll(List<UUID> uuidList) throws Exception {
+        // Convert list to string
+        String uuidListAsString = uuidList.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        // Select items by uuid's
+        String result = getMockMvc().perform(get(getExtendedUrl() + "/uuid/list/" + uuidListAsString)
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Convert it to list of briefs
+        return getObjectMapper().readValue(result,
+                getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
+    }
+
+    /**
+     * Selects all briefs
+     *
+     * @return list of all briefs
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default List<BRIEF> selectAll() throws Exception {
+        // Select items
+        String result = getMockMvc().perform(get(getExtendedUrl())
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Convert obtained results
+        return getObjectMapper().readValue(result,
+                getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
+    }
+
+    /**
+     * Gets a count of existing elements
+     *
+     * @return count of existing element
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default int count() throws Exception {
+        String countAsString = getMockMvc().perform(get(getExtendedUrl() + "/count")
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return Integer.parseInt(countAsString);
+    }
+
+    /**
+     * Removes detailed with given id and version
+     *
+     * @param uuid    identifier of detailed
+     * @param version current version of detailed
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default void remove(UUID uuid, long version) throws Exception {
+        getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(status().isNoContent());
+    }
+}

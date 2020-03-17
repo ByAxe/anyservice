@@ -1,11 +1,8 @@
 package com.anyservice.api;
 
 import com.anyservice.core.DateUtils;
+import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.api.APrimary;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.testng.Assert;
 
 import java.util.ArrayList;
@@ -13,140 +10,77 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
+public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary>
+        extends ICRUDOperations<BRIEF, DETAILED> {
 
-    String urlPrefix = "/api/v1";
-
-    String getUrl();
-
-    MockMvc getMockMvc();
-
-    MediaType getContentType();
-
-    ObjectMapper getObjectMapper();
-
-    Class<? extends APrimary> getBriefClass();
-
-    Class<? extends APrimary> getDetailedClass();
-
-    void assertEqualsDetailed(DETAILED detailed, DETAILED otherDetailed);
-
-    void assertEqualsListBrief(List<BRIEF> briefList, List<BRIEF> otherBriefList);
-
-    DETAILED createNewItem();
-
-    default String getExtendedUrl() {
-        return urlPrefix + getUrl();
+    /**
+     * Get url prefix
+     *
+     * @return url as {@link String}
+     */
+    default String getUrlPrefix() {
+        return "/api/v1";
     }
 
-    default UUID getUuidFromHeaderLocation(String headerLocation) {
-        Assert.assertNotNull(headerLocation);
-
-        // Get uuid from header
-        return UUID.fromString(headerLocation.substring(headerLocation.length() - 36));
-    }
-
-    default HttpHeaders getHeaders() {
-        return new HttpHeaders();
-    }
-
+    /**
+     * Creates a few items and then ensures created are equal to those were meant to be created
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     default void createAndSelectTest() throws Exception {
-
         List<DETAILED> items = new ArrayList<>();
 
         // Create items
-        for (int i = 0; i < 10; i++) {
-            DETAILED item = createNewItem();
-            items.add(item);
+        for (int i = 0; i < 10; i++) items.add(create().getDetailed());
 
-            String customerAsString = getObjectMapper().writeValueAsString(item);
+        // Select all created elements
+        List<BRIEF> actual = selectAll();
 
-            getMockMvc().perform(post(getExtendedUrl())
-                    .headers(getHeaders())
-                    .contentType(getContentType())
-                    .content(customerAsString))
-                    .andExpect(status().isCreated());
-        }
-
-        // Select items
-        String result = getMockMvc().perform(get(getExtendedUrl())
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        List<BRIEF> actual = getObjectMapper().readValue(result,
-                getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
-
+        // Prepare expected
         List<BRIEF> expected = items.stream()
                 .map(e -> (BRIEF) e)
                 .collect(Collectors.toList());
 
+        // Compare it
         assertEqualsListBrief(actual, expected);
     }
 
+    /**
+     * Measures amount of elements before and after creation of some
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     default void countTest() throws Exception {
-        int expectedAmount = Integer.parseInt(
-                getMockMvc().perform(get(getExtendedUrl() + "/count")
-                        .headers(getHeaders())
-                        .contentType(getContentType()))
-                        .andExpect(status().isOk())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString());
+        // Measure amount of elements
+        int expected = count();
 
-        // Create item
-        DETAILED item = createNewItem();
-        String customerAsString = getObjectMapper().writeValueAsString(item);
-        getMockMvc().perform(post(getExtendedUrl())
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(customerAsString))
-                .andExpect(status().isCreated());
+        // Create detailed
+        create();
 
-        expectedAmount++;
+        // increase expected by amount of created elements
+        expected++;
 
-        int result = Integer.parseInt(
-                getMockMvc().perform(get(getExtendedUrl() + "/count")
-                        .headers(getHeaders())
-                        .contentType(getContentType()))
-                        .andExpect(status().isOk())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString());
+        // Measure amount of elements after creation
+        int actual = count();
 
-        Assert.assertEquals(result, expectedAmount);
+        Assert.assertEquals(actual, expected);
     }
 
+    /**
+     * Creates and then removes detailed
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     default void deleteAndSelectByUUIDTest() throws Exception {
-        DETAILED item = createNewItem();
-        String customerAsString = getObjectMapper().writeValueAsString(item);
-        String headerLocation = getMockMvc().perform(post(getExtendedUrl())
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(customerAsString))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getHeader("Location");
+        // create detailed
+        DetailedWrapper<DETAILED> detailedWrapper = create();
+        UUID uuid = detailedWrapper.getUuid();
 
-        UUID uuid = getUuidFromHeaderLocation(headerLocation);
         // select by uuid
-        String contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        DETAILED obtainedResult = getObjectMapper().readValue(contentAsString,
-                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+        DETAILED obtainedResult = select(uuid);
 
         // Assert its uuid's are equal
         Assert.assertEquals(obtainedResult.getUuid(), uuid);
@@ -154,11 +88,7 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
         long version = DateUtils.convertOffsetDateTimeToMills(obtainedResult.getDtUpdate());
 
         // delete this row
-        getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isNoContent());
-
+        remove(uuid, version);
 
         // select again by uuid and expect there will be no entity returned
         getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
@@ -167,105 +97,52 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
                 .andExpect(status().isNoContent());
     }
 
+    /**
+     * Creates and updates detailed
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     default void updateTest() throws Exception {
-        DETAILED item = createNewItem();
-        String customerAsString = getObjectMapper().writeValueAsString(item);
-        String headerLocation = getMockMvc().perform(post(getExtendedUrl())
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(customerAsString))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getHeader("Location");
-
-        UUID uuid = getUuidFromHeaderLocation(headerLocation);
+        // Create detailed
+        DetailedWrapper<DETAILED> detailedWrapper = create();
+        UUID uuid = detailedWrapper.getUuid();
 
         // select by uuid
-        String contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        DETAILED obtainedResult = getObjectMapper().readValue(contentAsString,
-                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+        DETAILED obtainedResult = select(uuid);
 
         // Assert its uuid's are equal
         Assert.assertEquals(obtainedResult.getUuid(), uuid);
 
         long version = DateUtils.convertOffsetDateTimeToMills(obtainedResult.getDtUpdate());
 
-        // Update
-        DETAILED updatedItem = createNewItem();
-
-        String updatedItemAsString = getObjectMapper().writeValueAsString(updatedItem);
-
-        getMockMvc().perform(put(getExtendedUrl() + "/" + uuid + "/version/" + version)
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(updatedItemAsString))
-                .andExpect(status().isOk());
+        // Update whole detailed
+        DETAILED updatedItem = update(uuid, version);
 
         // Select updated row by uuid
-        contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        obtainedResult = getObjectMapper().readValue(contentAsString,
-                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
+        obtainedResult = select(uuid);
 
         assertEqualsDetailed(obtainedResult, updatedItem);
     }
 
+    /**
+     * Create a few elements and them find them all by uuid list
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     default void createAndFindAllByIdListTest() throws Exception {
         List<DETAILED> items = new ArrayList<>();
         List<UUID> uuidList = new ArrayList<>();
 
         // Create items
         for (int i = 0; i < 10; i++) {
-            DETAILED item = createNewItem();
+            DetailedWrapper<DETAILED> detailed = create();
 
-            items.add(item);
-
-            String customerAsString = getObjectMapper().writeValueAsString(item);
-
-            String headerLocation = getMockMvc().perform(post(getExtendedUrl())
-                    .headers(getHeaders())
-                    .contentType(getContentType())
-                    .content(customerAsString))
-                    .andExpect(status().isCreated())
-                    .andReturn()
-                    .getResponse()
-                    .getHeader("Location");
-
-            UUID uuid = getUuidFromHeaderLocation(headerLocation);
-            uuidList.add(uuid);
+            items.add(detailed.getDetailed());
+            uuidList.add(detailed.getUuid());
         }
 
-        // Create a string for a query from uuidList
-        String uuidListAsString = uuidList.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
-
-        // Select items by uuid's
-        String result = getMockMvc().perform(get(getExtendedUrl() + "/uuid/list/" + uuidListAsString)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        // Convert it to list of briefs
-        List<BRIEF> actual = getObjectMapper().readValue(result,
-                getObjectMapper().getTypeFactory().constructCollectionType(List.class, getBriefClass()));
+        // Select list of briefs by list of uuid
+        List<BRIEF> actual = selectAll(uuidList);
 
         // Convert our detailed list to brief list
         List<BRIEF> expected = items.stream()
@@ -275,4 +152,5 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary> {
         // Ensure that they are equal
         assertEqualsListBrief(actual, expected);
     }
+
 }

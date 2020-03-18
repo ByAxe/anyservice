@@ -7,14 +7,13 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
-import com.anyservice.service.api.ICRUDService;
+import com.anyservice.service.aop.markers.RemovePasswordFromReturningValue;
 import com.anyservice.service.api.IPasswordService;
 import com.anyservice.service.validators.api.user.IUserValidator;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.WrongPasswordException;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.convert.ConversionService;
@@ -29,9 +28,8 @@ import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 @Service
 @Transactional(readOnly = true)
-public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, Date> {
-
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+@Log4j2
+public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final ConversionService conversionService;
@@ -51,12 +49,13 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
 
     @Override
     @Transactional
+    @RemovePasswordFromReturningValue
     public UserDetailed create(UserDetailed user) {
         // Validate user
         Map<String, Object> errors = userValidator.validateCreation(user);
 
         if (!errors.isEmpty()) {
-            logger.info(StringUtils.join(errors));
+            log.info(StringUtils.join(errors));
             throw new IllegalArgumentException(errors.toString());
         }
 
@@ -70,7 +69,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (entity == null) {
             String message = messageSource.getMessage("user.conversion.exception",
                     null, LocaleContextHolder.getLocale());
-            logger.error(message);
+            log.error(message);
             throw new RuntimeException(message);
         }
 
@@ -80,7 +79,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         setRequiredFieldsToEntity(entity);
 
         // Save new user
-        UserEntity savedEntity = userRepository.save(entity);
+        UserEntity savedEntity = userRepository.saveAndFlush(entity);
 
         // Return saved user back
         return conversionService.convert(savedEntity, UserDetailed.class);
@@ -103,12 +102,13 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
 
     @Override
     @Transactional
+    @RemovePasswordFromReturningValue
     public UserDetailed update(UserDetailed user, UUID uuid, Date version) {
         // Check if such user exists
         if (!existsById(uuid)) {
             String message = messageSource.getMessage("user.not.exists",
                     null, LocaleContextHolder.getLocale());
-            logger.info(message);
+            log.info(message);
             throw new IllegalArgumentException(message);
         }
 
@@ -121,20 +121,23 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (version.getTime() != lastUpdateDate) {
             String message = messageSource.getMessage("user.update.version",
                     null, LocaleContextHolder.getLocale());
-            logger.info(message);
+            log.info(message);
             throw new NullPointerException(message);
         }
 
         // Set all the system fields
         user.setUuid(versionOfUserFromDB.getUuid());
         user.setDtCreate(versionOfUserFromDB.getDtCreate());
+        user.setPasswordUpdateDate(versionOfUserFromDB.getPasswordUpdateDate());
+        user.setRole(versionOfUserFromDB.getRole());
+        user.setState(versionOfUserFromDB.getState());
         user.setDtUpdate(OffsetDateTime.now());
 
         // Validate user
         Map<String, Object> errors = userValidator.validateUpdates(user);
 
         if (!errors.isEmpty()) {
-            logger.info(StringUtils.join(errors));
+            log.info(StringUtils.join(errors));
             throw new IllegalArgumentException(errors.toString());
         }
 
@@ -148,16 +151,18 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (entity == null) {
             String message = messageSource.getMessage("user.conversion.exception",
                     null, LocaleContextHolder.getLocale());
-            logger.error(message);
+            log.error(message);
             throw new RuntimeException(message);
         }
 
         // Save updated user to DB
-        UserEntity savedEntity = userRepository.save(entity);
+        UserEntity savedEntity = userRepository.saveAndFlush(entity);
         return conversionService.convert(savedEntity, UserDetailed.class);
     }
 
+    @Override
     @Transactional
+    @RemovePasswordFromReturningValue
     public UserDetailed changePassword(UserForChangePassword userWithPassword) {
 
         // Check if uuid is present
@@ -165,7 +170,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (uuid == null) {
             String message = messageSource.getMessage("uuid.empty",
                     null, LocaleContextHolder.getLocale());
-            logger.info(message);
+            log.info(message);
             throw new IllegalArgumentException(message);
         }
 
@@ -175,7 +180,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (!existsById(uuid)) {
             String message = messageSource.getMessage("user.not.exists",
                     null, LocaleContextHolder.getLocale());
-            logger.info(message);
+            log.info(message);
             throw new IllegalArgumentException(message);
         }
 
@@ -185,7 +190,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
 
         // If any errors - show it to the user
         if (!errors.isEmpty()) {
-            logger.info(StringUtils.join(errors));
+            log.info(StringUtils.join(errors));
             throw new IllegalArgumentException(errors.toString());
         }
 
@@ -206,12 +211,12 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (entity == null) {
             String message = messageSource.getMessage("user.conversion.exception",
                     null, LocaleContextHolder.getLocale());
-            logger.error(message);
+            log.error(message);
             throw new RuntimeException(message);
         }
 
         // Save updated user to DB
-        UserEntity savedEntity = userRepository.save(entity);
+        UserEntity savedEntity = userRepository.saveAndFlush(entity);
 
         return conversionService.convert(savedEntity, UserDetailed.class);
     }
@@ -282,7 +287,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (!existsById(uuid)) {
             String message = messageSource.getMessage("user.not.exists",
                     null, LocaleContextHolder.getLocale());
-            logger.info(message);
+            log.info(message);
             throw new IllegalArgumentException(message);
         }
 
@@ -295,7 +300,7 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         if (version.getTime() != lastUpdateDate) {
             String message = messageSource.getMessage("user.delete.version",
                     null, LocaleContextHolder.getLocale());
-            logger.info(message);
+            log.info(message);
             throw new IllegalArgumentException(message);
         }
 
@@ -310,17 +315,10 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
     }
 
 
-    /**
-     * Returns user if the userName and password are correct
-     *
-     * @param userName userName of a user
-     * @param password password of a user
-     * @return user
-     * @throws UserNotFoundException  if user was not found by specified userName
-     * @throws WrongPasswordException if password if verification of hash was unsuccessful
-     */
+    @Override
+    @RemovePasswordFromReturningValue
     public UserDetailed findUserForLogin(String userName, String password) {
-        UserDetailed user = findByUserName(userName);
+        UserDetailed user = findByUserNameWithPassword(userName);
 
         if (user == null) {
             throw new UserNotFoundException(messageSource.getMessage("security.controller.login.user.not.found",
@@ -338,13 +336,21 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         return user;
     }
 
+    @Override
+    @RemovePasswordFromReturningValue
+    public UserDetailed findByUserName(String userName) {
+        UserEntity user = userRepository.findFirstByUserName(userName);
+
+        return conversionService.convert(user, UserDetailed.class);
+    }
+
     /**
-     * Finds user by its userName
+     * Finds user by its userName (with a password)
      *
      * @param userName of a user
      * @return user found by userName
      */
-    public UserDetailed findByUserName(String userName) {
+    private UserDetailed findByUserNameWithPassword(String userName) {
         UserEntity user = userRepository.findFirstByUserName(userName);
 
         return conversionService.convert(user, UserDetailed.class);

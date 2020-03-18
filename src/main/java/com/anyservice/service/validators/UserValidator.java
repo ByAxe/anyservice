@@ -4,7 +4,7 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
-import com.anyservice.service.PasswordService;
+import com.anyservice.service.user.PasswordService;
 import com.anyservice.service.validators.api.user.AUserValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;

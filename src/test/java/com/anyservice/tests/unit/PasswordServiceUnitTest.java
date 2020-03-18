@@ -1,7 +1,7 @@
 package com.anyservice.tests.unit;
 
 import com.anyservice.config.TestConfig;
-import com.anyservice.service.PasswordService;
+import com.anyservice.service.user.PasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;

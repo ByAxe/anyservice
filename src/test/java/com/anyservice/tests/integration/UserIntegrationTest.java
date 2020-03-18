@@ -325,13 +325,21 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .andExpect(resultMatcher);
     }
 
-    //        @Test
+    /**
+     * Create user to ensure he does not have a password
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    @Test
     public void getUserWithoutPassword() throws Exception {
         // Create user
+        DetailedWrapper<UserDetailed> userWrapper = create();
 
         // Find user by id
+        UserDetailed selectedUser = select(userWrapper.getUuid());
 
         // make sure password is null
+        Assert.assertNull(selectedUser.getPassword());
     }
 
     //    @Test

@@ -1,4 +1,4 @@
-package com.anyservice.service;
+package com.anyservice.service.user;
 
 import com.anyservice.service.api.IPasswordService;
 import org.mindrot.jbcrypt.BCrypt;

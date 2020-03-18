@@ -245,6 +245,9 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
                 .getResponse()
                 .getContentAsString();
 
+        // If we are expecting no content here, so return null
+        if (expectNoContent.equals(expect)) return null;
+
         return getObjectMapper().readValue(contentAsString,
                 getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
     }

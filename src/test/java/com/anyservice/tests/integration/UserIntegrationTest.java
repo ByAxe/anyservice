@@ -30,9 +30,7 @@ import static com.anyservice.core.RandomValuesGenerator.*;
 import static com.anyservice.core.TestingUtilityClass.PASSWORD_MAX_LENGTH;
 import static com.anyservice.core.TestingUtilityClass.PASSWORD_MIN_LENGTH;
 import static org.apache.commons.lang3.RandomStringUtils.random;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBrief, UserDetailed> {
@@ -116,6 +114,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .isVerified(randomBoolean())
                 .legalStatus(randomEnum(LegalStatus.class))
                 .password(random(randomNumber(passwordMinLength, passwordMaxLength), true, true))
+                .address(randomString(0, 255))
                 .build();
     }
 
@@ -181,7 +180,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         firstUser.setUserName(userNameOfFirstUser);
 
         // Create first user in DB
-        DetailedWrapper<UserDetailed> firstUserWrapper = create(firstUser);
+        DetailedWrapper<UserDetailed> firstUserWrapper = create(firstUser, expectDefault);
 
         // Get it uuid
         UUID uuidOfFirstUser = firstUserWrapper.getUuid();
@@ -191,7 +190,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         secondUser.setUserName(userNameOfSecondUser);
 
         // Create second user in DB
-        DetailedWrapper<UserDetailed> secondUserWrapper = create(secondUser);
+        DetailedWrapper<UserDetailed> secondUserWrapper = create(secondUser, expectDefault);
 
         // Select the first user
         UserDetailed obtainedResult = select(uuidOfFirstUser);
@@ -205,14 +204,8 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         obtainedResult.setUserName(userNameOfSecondUser);
         obtainedResult.setPassword(randomString(passwordMinLength, passwordMaxLength));
 
-        String updatedUserAsString = getObjectMapper().writeValueAsString(obtainedResult);
-
         // Make sure we get an exception in the end
-        getMockMvc().perform(put(getExtendedUrl() + "/" + uuidOfFirstUser + "/version/" + version)
-                .headers(getHeaders())
-                .contentType(getContentType())
-                .content(updatedUserAsString))
-                .andExpect(status().isBadRequest());
+        update(obtainedResult, uuidOfFirstUser, version, expectBadRequest);
     }
 
     /**
@@ -226,10 +219,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         long version = new Date().getTime();
 
         // Wait for fail when removing non-existing user
-        getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isBadRequest());
+        remove(uuid, version, expectBadRequest);
     }
 
     /**
@@ -247,10 +237,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         long version = new Date().getTime() + 100_000;
 
         // Make delete request and expect exception
-        getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isBadRequest());
+        remove(uuid, version, expectBadRequest);
     }
 
     /**
@@ -260,10 +247,6 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
      */
     @Test
     public void changePasswordTest() throws Exception {
-        // Prepare result matchers
-        ResultMatcher expectOk = status().isOk();
-        ResultMatcher expectBadRequest = status().isBadRequest();
-
         // Generate password
         String password = randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
 
@@ -272,7 +255,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         user.setPassword(password);
 
         // Create user
-        DetailedWrapper<UserDetailed> userWrapper = create(user);
+        DetailedWrapper<UserDetailed> userWrapper = create(user, expectDefault);
 
         // Get uuid of created user
         UUID uuid = userWrapper.getUuid();
@@ -297,6 +280,17 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         changePassword(uuid, password, newPassword, expectOk);
     }
 
+    /**
+     * Change password operation wrapper
+     * Builds {@link UserForChangePassword} from given data
+     *
+     * @param uuid          identifier of a user
+     * @param password      old password
+     * @param newPassword   new password
+     * @param resultMatcher result to expect after execution of method
+     * @return {@link UserForChangePassword} that was used for change password operation
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     private UserForChangePassword changePassword(UUID uuid, String password, String newPassword,
                                                  ResultMatcher resultMatcher) throws Exception {
         // Build a special object, required for the second password change operation
@@ -312,6 +306,14 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         return userForChangePassword;
     }
 
+    /**
+     * Change password operation wrapper
+     * Converts {@link UserForChangePassword} to string and performs change password operation
+     *
+     * @param userForChangePassword {@link UserForChangePassword} that is used for change password operation
+     * @param resultMatcher         result to expect after execution of method
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     private void changePassword(UserForChangePassword userForChangePassword,
                                 ResultMatcher resultMatcher) throws Exception {
         String valueAsString = getObjectMapper().writeValueAsString(userForChangePassword);
@@ -323,7 +325,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .andExpect(resultMatcher);
     }
 
-    //    @Test
+    //        @Test
     public void getUserWithoutPassword() throws Exception {
         // Create user
 

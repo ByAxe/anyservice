@@ -128,8 +128,6 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         // Set all the system fields
         user.setUuid(versionOfUserFromDB.getUuid());
         user.setDtCreate(versionOfUserFromDB.getDtCreate());
-        user.setRole(versionOfUserFromDB.getRole());
-        user.setState(versionOfUserFromDB.getState());
         user.setDtUpdate(OffsetDateTime.now());
 
         // Validate user
@@ -139,6 +137,9 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
             logger.info(StringUtils.join(errors));
             throw new IllegalArgumentException(errors.toString());
         }
+
+        // Set password hash from the DB (change password operation not allowed in this method)
+        user.setPassword(versionOfUserFromDB.getPassword());
 
         // If everything is ok - convert it to DB entity
         UserEntity entity = conversionService.convert(user, UserEntity.class);
@@ -179,8 +180,8 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
         }
 
         // Validate the password for change
-        Map<String, Object> errors = userValidator.validatePasswordForChange(userWithPassword.getNewPassword(),
-                userWithPassword.getOldPassword(), versionOfUserFromDB.getPassword());
+        Map<String, Object> errors = userValidator.validatePasswordForChange(userWithPassword.getOldPassword(),
+                userWithPassword.getNewPassword(), versionOfUserFromDB.getPassword());
 
         // If any errors - show it to the user
         if (!errors.isEmpty()) {
@@ -188,15 +189,31 @@ public class UserService implements ICRUDService<UserBrief, UserDetailed, UUID, 
             throw new IllegalArgumentException(errors.toString());
         }
 
-        // At this moment, we know that everything is fine
-        versionOfUserFromDB.setPassword(userWithPassword.getNewPassword());
+        // Hash the password
+        String hash = passwordService.hash(userWithPassword.getNewPassword());
 
+        // Set password hash to user
+        versionOfUserFromDB.setPassword(hash);
+
+        // Set password update date
         OffsetDateTime dtUpdate = versionOfUserFromDB.getDtUpdate();
         versionOfUserFromDB.setPasswordUpdateDate(dtUpdate);
 
-        // If everything is ok - update the user
-        Date version = new Date(convertOffsetDateTimeToMills(dtUpdate));
-        return update(versionOfUserFromDB, uuid, version);
+        // If everything is ok - convert it to DB entity
+        UserEntity entity = conversionService.convert(versionOfUserFromDB, UserEntity.class);
+
+        // If conversion was unsuccessful
+        if (entity == null) {
+            String message = messageSource.getMessage("user.conversion.exception",
+                    null, LocaleContextHolder.getLocale());
+            logger.error(message);
+            throw new RuntimeException(message);
+        }
+
+        // Save updated user to DB
+        UserEntity savedEntity = userRepository.save(entity);
+
+        return conversionService.convert(savedEntity, UserDetailed.class);
     }
 
     @Override

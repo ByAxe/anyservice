@@ -7,9 +7,11 @@ import org.springframework.core.convert.converter.Converter;
 public class UserDetailedToEntityConverter implements Converter<UserDetailed, UserEntity> {
     @Override
     public UserEntity convert(UserDetailed source) {
-        UserEntity entity = UserEntity.builder()
+        return UserEntity.builder()
+                .uuid(source.getUuid())
                 .dtCreate(source.getDtCreate())
                 .dtUpdate(source.getDtUpdate())
+                .password(source.getPassword())
                 .passwordUpdateDate(source.getPasswordUpdateDate())
                 .contacts(source.getContacts())
                 .description(source.getDescription())
@@ -22,9 +24,5 @@ public class UserDetailedToEntityConverter implements Converter<UserDetailed, Us
                 .state(source.getState() != null ? source.getState().name() : null)
                 .address(source.getAddress())
                 .build();
-
-        entity.setUuid(source.getUuid());
-
-        return entity;
     }
 }

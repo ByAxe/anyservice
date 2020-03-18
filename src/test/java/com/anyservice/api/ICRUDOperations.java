@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.testng.Assert;
 
 import java.util.List;
@@ -16,6 +17,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrimary> {
+
+    // Result Matchers
+    ResultMatcher expectOk = status().isOk();
+    ResultMatcher expectCreated = status().isCreated();
+    ResultMatcher expectBadRequest = status().isBadRequest();
+    ResultMatcher expectNoContent = status().isNoContent();
+
+    // Use whenever expected default successful response of performing operation
+    ResultMatcher expectDefault = null;
 
     /**
      * Object through that all the queries is made
@@ -124,29 +134,36 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
 
     /**
      * Create {@link DETAILED} and return special object, containing necessary data after creation
+     * <p>
+     * An overloaded version of {@link ICRUDOperations#create(APrimary, ResultMatcher)}
+     * With default {@link DETAILED} and {@link ResultMatcher}
      *
      * @return special object, containing necessary data after creation
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
     default DetailedWrapper<DETAILED> create() throws Exception {
-        return create(createNewItem());
+        return create(createNewItem(), expectCreated);
     }
 
     /**
      * Creates {@link DETAILED} and return special object, containing necessary data after creation
      *
      * @param detailed that must be created
+     * @param expect   expectations about what to expect after execution of a method
      * @return special object, containing necessary data after creation
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
-    default DetailedWrapper<DETAILED> create(DETAILED detailed) throws Exception {
+    default DetailedWrapper<DETAILED> create(DETAILED detailed, ResultMatcher expect) throws Exception {
         String customerAsString = getObjectMapper().writeValueAsString(detailed);
+
+        // If expect was passed as null - interpret it as default expectation
+        if (expect == expectDefault) expect = expectCreated;
 
         String headerLocation = getMockMvc().perform(post(getExtendedUrl())
                 .headers(getHeaders())
                 .contentType(getContentType())
                 .content(customerAsString))
-                .andExpect(status().isCreated())
+                .andExpect(expect)
                 .andReturn()
                 .getResponse()
                 .getHeader("Location");
@@ -166,7 +183,8 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
      */
     default DETAILED update(UUID uuid, long version) throws Exception {
         DETAILED detailed = createNewItem();
-        update(detailed, uuid, version);
+
+        update(detailed, uuid, version, expectOk);
         return detailed;
     }
 
@@ -176,30 +194,53 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
      * @param detailed updated object
      * @param uuid     identifier
      * @param version  actual version of it
+     * @param expect   expectations about what to expect after execution of a method
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
-    default void update(DETAILED detailed, UUID uuid, long version) throws Exception {
+    default void update(DETAILED detailed, UUID uuid, long version, ResultMatcher expect) throws Exception {
         String updatedItemAsString = getObjectMapper().writeValueAsString(detailed);
+
+        // If expect was passed as null - interpret it as default expectation
+        if (expect == expectDefault) expect = expectOk;
 
         getMockMvc().perform(put(getExtendedUrl() + "/" + uuid + "/version/" + version)
                 .headers(getHeaders())
                 .contentType(getContentType())
                 .content(updatedItemAsString))
-                .andExpect(status().isOk());
+                .andExpect(expect);
     }
 
     /**
      * Selects {@link DETAILED} by passed uuid
+     * <p>
+     * An overloaded version of {@link ICRUDOperations#select(UUID, ResultMatcher)}
+     * With default {@link ResultMatcher}
      *
      * @param uuid {@link DETAILED} identifier
      * @return {@link DETAILED} with passed uuid
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
     default DETAILED select(UUID uuid) throws Exception {
+        return select(uuid, expectOk);
+    }
+
+    /**
+     * Selects {@link DETAILED} by passed uuid
+     *
+     * @param expect expectations about what to expect after execution of a method
+     * @param uuid   {@link DETAILED} identifier
+     * @return {@link DETAILED} with passed uuid
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default DETAILED select(UUID uuid, ResultMatcher expect) throws Exception {
+
+        // If expect was passed as null - interpret it as default expectation
+        if (expect == expectDefault) expect = expectOk;
+
         String contentAsString = getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isOk())
+                .andExpect(expect)
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -210,22 +251,40 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
 
     /**
      * Selects all briefs by given list of uuid
+     * <p>
+     * An overloaded version of {@link ICRUDOperations#selectAll(List, ResultMatcher)}
+     * With default {@link ResultMatcher}
      *
      * @param uuidList identifiers list
      * @return list of briefs
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
     default List<BRIEF> selectAll(List<UUID> uuidList) throws Exception {
+        return selectAll(uuidList, expectOk);
+    }
+
+    /**
+     * Selects all briefs by given list of uuid
+     *
+     * @param expect   expectations about what to expect after execution of a method
+     * @param uuidList identifiers list
+     * @return list of briefs
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default List<BRIEF> selectAll(List<UUID> uuidList, ResultMatcher expect) throws Exception {
         // Convert list to string
         String uuidListAsString = uuidList.stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(","));
 
+        // If expect was passed as null - interpret it as default expectation
+        if (expect == expectDefault) expect = expectOk;
+
         // Select items by uuid's
         String result = getMockMvc().perform(get(getExtendedUrl() + "/uuid/list/" + uuidListAsString)
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isOk())
+                .andExpect(expect)
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -237,16 +296,34 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
 
     /**
      * Selects all briefs
+     * <p>
+     * An overloaded version of {@link ICRUDOperations#selectAll(ResultMatcher)}
+     * With default {@link ResultMatcher}
      *
      * @return list of all briefs
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
     default List<BRIEF> selectAll() throws Exception {
+        return selectAll(expectOk);
+    }
+
+    /**
+     * Selects all briefs
+     *
+     * @param expect expectations about what to expect after execution of a method
+     * @return list of all briefs
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default List<BRIEF> selectAll(ResultMatcher expect) throws Exception {
+
+        // If expect was passed as null - interpret it as default expectation
+        if (expect == expectDefault) expect = expectOk;
+
         // Select items
         String result = getMockMvc().perform(get(getExtendedUrl())
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isOk())
+                .andExpect(expect)
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -258,15 +335,33 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
 
     /**
      * Gets a count of existing elements
+     * <p>
+     * An overloaded version of {@link ICRUDOperations#count(ResultMatcher)}
+     * With default {@link ResultMatcher}
      *
      * @return count of existing element
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
     default int count() throws Exception {
+        return count(expectOk);
+    }
+
+    /**
+     * Gets a count of existing elements
+     *
+     * @param expect expectations about what to expect after execution of a method
+     * @return count of existing element
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default int count(ResultMatcher expect) throws Exception {
+
+        // If expect was passed as null - interpret it as default expectation
+        if (expect == expectDefault) expect = expectOk;
+
         String countAsString = getMockMvc().perform(get(getExtendedUrl() + "/count")
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isOk())
+                .andExpect(expect)
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -276,15 +371,34 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
 
     /**
      * Removes detailed with given id and version
+     * <p>
+     * An overloaded version of {@link ICRUDOperations#remove(UUID, long, ResultMatcher)}
+     * With default {@link ResultMatcher}
      *
      * @param uuid    identifier of detailed
      * @param version current version of detailed
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
     default void remove(UUID uuid, long version) throws Exception {
+        remove(uuid, version, expectNoContent);
+    }
+
+    /**
+     * Removes detailed with given id and version
+     *
+     * @param expect  expectations about what to expect after execution of a method
+     * @param uuid    identifier of detailed
+     * @param version current version of detailed
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default void remove(UUID uuid, long version, ResultMatcher expect) throws Exception {
+
+        // If expect was passed as null - interpret it as default expectation
+        if (expect == expectDefault) expect = expectNoContent;
+
         getMockMvc().perform(delete(getExtendedUrl() + "/" + uuid + "/version/" + version)
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isNoContent());
+                .andExpect(expect);
     }
 }

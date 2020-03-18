@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary>
         extends ICRUDOperations<BRIEF, DETAILED> {
 
@@ -91,10 +88,7 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary>
         remove(uuid, version);
 
         // select again by uuid and expect there will be no entity returned
-        getMockMvc().perform(get(getExtendedUrl() + "/" + uuid)
-                .headers(getHeaders())
-                .contentType(getContentType()))
-                .andExpect(status().isNoContent());
+        select(uuid, expectNoContent);
     }
 
     /**

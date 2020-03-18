@@ -1,24 +1,4 @@
-- [x] ...deleted ~19 tasks
-- [x] Implement converters
-- [x] Register them into configuration
-- [x] Implement findFirstByUserName method
-- [x] Add password hashing on creation of a user
-- [x] Add message sources
-- [x] Catch exception in Controller
-- [x] Implement "create" in Service layer
-- [x] Implement "create" in Controller
-- [x] Fix Brief-Detailed confilicts
-- [x] Remove not used messages from i18n
-- [x] Implement validation of update and create operations
-- [x] Implement "update" in Service layer
-- [x] Implement "update" in Controller
-- [x] Recreate Database from "script.sql"
-- [x] Set up basic tests with TestNG
-- [x] Cover basic UserController operations with tests
-- [x] Make all the tests pass
-- [x] Cover all the validation scenarios with tests
-- [x] Cover hash Function with tests
-- [x] Cover create and update corner cases with tests
+- [x] ...deleted 40 tasks
 
     - [~] Add Spring Security to application
         - [x] Add "country", "address", "role", "state", "passwordUpdateDate" to sql
@@ -35,8 +15,9 @@
         - [x] Cover case when role || state is null when passed Front -> DB and vise versa
         - [x] Cover validatePasswordForChange method with tests
         - [x] Clean up and make reusable integration tests' abstraction
-        - [ ] Cover changePassword method  with tests
-        - [ ] Add resultMatches to ICRUDOperations methods to add flexibility to it
+        - [x] Cover changePassword method with tests
+        - [x] Add resultMatches to ICRUDOperations methods to extend its flexibility
+        - [ ] Add verification logic: set status "waiting" when isVerified==false & not allow to set legal status etc.
         - [ ] Make sure via tests, that password is not updating by any of update operations
         - [ ] Cover SecurityController with tests
         - [ ] Make all the tests pass
@@ -55,9 +36,3 @@
 - [ ] Make the TODO in UserValidator
 - [ ] Add function "Restore password"
 - [ ] Add Swagger to application
-
-___
-**Explanations**
-Task completed  =>  [+]
-Task in process =>  [~]
-Task created    =>  [ ]

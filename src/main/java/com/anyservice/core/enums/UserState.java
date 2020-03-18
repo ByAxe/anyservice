@@ -2,6 +2,7 @@ package com.anyservice.core.enums;
 
 public enum UserState {
     ACTIVE("Active", true, true),
+    WAITING("Waiting for verification", false, true),
     BLOCKED("Blocked", true, false);
 
     private boolean enabled;

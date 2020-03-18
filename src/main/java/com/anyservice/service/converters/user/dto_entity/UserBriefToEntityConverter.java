@@ -7,7 +7,8 @@ import org.springframework.core.convert.converter.Converter;
 public class UserBriefToEntityConverter implements Converter<UserBrief, UserEntity> {
     @Override
     public UserEntity convert(UserBrief source) {
-        UserEntity entity = UserEntity.builder()
+        return UserEntity.builder()
+                .uuid(source.getUuid())
                 .dtCreate(source.getDtCreate())
                 .dtUpdate(source.getDtUpdate())
                 .userName(source.getUserName())
@@ -15,9 +16,5 @@ public class UserBriefToEntityConverter implements Converter<UserBrief, UserEnti
                 .role(source.getRole() != null ? source.getRole().name() : null)
                 .state(source.getState() != null ? source.getState().name() : null)
                 .build();
-
-        entity.setUuid(source.getUuid());
-
-        return entity;
     }
 }

@@ -27,7 +27,7 @@ import java.util.TimeZone;
         classes = {AnyServiceApplication.class}
 )
 @TestPropertySource(locations = {
-        "classpath:environment.yml"
+        "classpath:environment.properties"
 })
 @DirtiesContext
 public abstract class TestConfig extends AbstractTransactionalTestNGSpringContextTests {
@@ -48,7 +48,9 @@ public abstract class TestConfig extends AbstractTransactionalTestNGSpringContex
 
     @BeforeMethod
     public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac)/*.addFilter(springSecurityFilterChain)*/.build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac)
+                /*.addFilter(springSecurityFilterChain)*/
+                .build();
     }
 
     @BeforeClass

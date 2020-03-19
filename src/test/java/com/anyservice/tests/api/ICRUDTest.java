@@ -1,4 +1,4 @@
-package com.anyservice.api;
+package com.anyservice.tests.api;
 
 import com.anyservice.core.DateUtils;
 import com.anyservice.dto.DetailedWrapper;
@@ -145,6 +145,21 @@ public interface ICRUDTest<BRIEF extends APrimary, DETAILED extends APrimary>
 
         // Ensure that they are equal
         assertEqualsListBrief(actual, expected);
+    }
+
+    /**
+     * Create an element and make sure exists method will confirm that
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default void createAndCheckIfExists() throws Exception {
+        DetailedWrapper<DETAILED> userWrapper = create();
+
+        UUID uuid = userWrapper.getUuid();
+
+        boolean exists = exists(uuid);
+
+        Assert.assertTrue(exists);
     }
 
 }

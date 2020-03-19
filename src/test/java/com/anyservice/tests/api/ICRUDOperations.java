@@ -1,4 +1,4 @@
-package com.anyservice.api;
+package com.anyservice.tests.api;
 
 import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.api.APrimary;
@@ -403,5 +403,24 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
                 .headers(getHeaders())
                 .contentType(getContentType()))
                 .andExpect(expect);
+    }
+
+    /**
+     * Checks if the user by uuid exists
+     *
+     * @param uuid identifier of a user
+     * @return exists or not
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default boolean exists(UUID uuid) throws Exception {
+        String countAsString = getMockMvc().perform(get(getExtendedUrl() + "/exists/" + uuid)
+                .headers(getHeaders())
+                .contentType(getContentType()))
+                .andExpect(expectOk)
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return Boolean.parseBoolean(countAsString);
     }
 }

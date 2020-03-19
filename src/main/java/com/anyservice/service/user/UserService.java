@@ -309,11 +309,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    @Transactional
     public void deleteAll() {
-        userRepository.deleteAll();
+       throw new UnsupportedOperationException();
     }
-
 
     @Override
     @RemovePasswordFromReturningValue

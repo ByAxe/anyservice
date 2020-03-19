@@ -18,12 +18,12 @@
         - [x] Cover changePassword method with tests
         - [x] Add resultMatches to ICRUDOperations methods to extend its flexibility
         - [x] Make sure via tests, that password is not updating by any of update operations
-        - [ ] Add verification logic: set status "waiting" when isVerified==false & not allow to set legal status etc.
         - [ ] Cover SecurityController with tests
         - [ ] Make all the tests pass
         - [ ] Merge spring-security branch into master
 
 - [ ] Add "trials" for password changing
+- [ ] Add verification logic: set status "waiting" when isVerified==false & not allow to set legal status etc.
 - [ ] Replace logging calls with lombok annotation @Log4j2
 - [ ] Create IUserService interface and replace all calls to UserService by IUserService calls
 - [ ] Add comments to script.sql & test_script.sql

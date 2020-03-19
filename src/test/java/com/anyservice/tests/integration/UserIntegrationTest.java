@@ -1,6 +1,5 @@
 package com.anyservice.tests.integration;
 
-import com.anyservice.api.ICRUDTest;
 import com.anyservice.config.TestConfig;
 import com.anyservice.core.DateUtils;
 import com.anyservice.core.enums.LegalStatus;
@@ -12,6 +11,8 @@ import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.service.api.IPasswordService;
+import com.anyservice.service.user.IUserService;
+import com.anyservice.tests.api.ICRUDTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,9 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
 
     @Autowired
     private IPasswordService passwordService;
+
+    @Autowired
+    private IUserService userService;
 
     private String baseUrl = "/";
 
@@ -163,6 +167,12 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     @Override
     public void createAndFindAllByIdListTest() throws Exception {
         ICRUDTest.super.createAndFindAllByIdListTest();
+    }
+
+    @Test
+    @Override
+    public void createAndCheckIfExists() throws Exception {
+        ICRUDTest.super.createAndCheckIfExists();
     }
 
     /**
@@ -342,13 +352,69 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         Assert.assertNull(selectedUser.getPassword());
     }
 
-    //    @Test
+    /**
+     * Create&Update user and make sure its password wasn't changed unintentionally, since creation
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    @Test
     public void updateUserButPasswordMustNotChange() throws Exception {
+        // Generate password
+        String password = randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+
+        // Build a new user
+        UserDetailed user = createNewItem();
+        user.setPassword(password);
+
         // Create user
+        DetailedWrapper<UserDetailed> userWrapper = create(user, expectDefault);
+
+        // Get uuid of created user
+        UUID uuid = userWrapper.getUuid();
+
+        // Select created user
+        UserDetailed createdUser = select(uuid);
+
+        // Get its latest "version"
+        long version = DateUtils.convertOffsetDateTimeToMills(createdUser.getDtUpdate());
 
         // Update user
+        update(uuid, version);
 
-        // Make sure password did not change
+        /* If changing operation will be successful - password wasn't changed, since creation */
 
+        // Generate a new password for the user
+        String newPassword = randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+
+        // Change password, using our first password
+        changePassword(uuid, password, newPassword, expectOk);
+    }
+
+    @Test
+    public void findUserForLoginTest() throws Exception {
+        // Generate password
+        String password = randomString(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH);
+
+        // Build a new user
+        UserDetailed user = createNewItem();
+        user.setPassword(password);
+
+        // Get user name of a user
+        String userName = user.getUserName();
+
+        // Create user
+        DetailedWrapper<UserDetailed> userWrapper = create(user, expectDefault);
+
+        // Get uuid
+        UUID uuid = userWrapper.getUuid();
+
+        // Select created user
+        UserDetailed expectedUser = select(uuid);
+
+        // Try to get user via given criteria
+        UserDetailed actualUser = userService.findUserForLogin(userName, password);
+
+        // If we got here, search was successful
+        assertEqualsDetailed(actualUser, expectedUser);
     }
 }

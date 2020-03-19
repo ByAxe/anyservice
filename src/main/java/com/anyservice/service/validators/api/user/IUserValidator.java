@@ -1,12 +1,13 @@
 package com.anyservice.service.validators.api.user;
 
+import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.service.validators.api.IValidator;
 
 import java.util.Map;
 import java.util.UUID;
 
-public interface IUserValidator<USER> extends IValidator<USER> {
+public interface IUserValidator extends IValidator<UserDetailed> {
 
     /**
      * Validate userName according to rules
@@ -43,4 +44,13 @@ public interface IUserValidator<USER> extends IValidator<USER> {
      * @param errors   all the errors gathered in process of validation
      */
     void validateInitials(Initials initials, Map<String, Object> errors);
+
+    /**
+     * Ensure that given field contains only letters
+     *
+     * @param field     field content REQUIRED
+     * @param fieldName field name REQUIRED
+     * @param errors    errors during validation
+     */
+    void validateLettersOnlyField(String field, String fieldName, Map<String, Object> errors);
 }

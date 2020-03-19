@@ -33,12 +33,12 @@ public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final ConversionService conversionService;
-    private final IUserValidator<UserDetailed> userValidator;
+    private final IUserValidator userValidator;
     private final IPasswordService passwordService;
     private final MessageSource messageSource;
 
     public UserService(UserRepository userRepository, ConversionService conversionService,
-                       IUserValidator<UserDetailed> userValidator, IPasswordService passwordService,
+                       IUserValidator userValidator, IPasswordService passwordService,
                        MessageSource messageSource) {
         this.userRepository = userRepository;
         this.conversionService = conversionService;

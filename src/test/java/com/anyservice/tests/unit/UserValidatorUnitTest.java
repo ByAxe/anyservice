@@ -6,7 +6,7 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.service.api.IPasswordService;
-import com.anyservice.service.validators.UserValidator;
+import com.anyservice.service.validators.api.user.IUserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
@@ -23,7 +23,7 @@ import static org.apache.commons.lang3.RandomStringUtils.random;
 public class UserValidatorUnitTest extends TestConfig {
 
     @Autowired
-    private UserValidator userValidator;
+    private IUserValidator userValidator;
 
     @Autowired
     private IPasswordService passwordService;

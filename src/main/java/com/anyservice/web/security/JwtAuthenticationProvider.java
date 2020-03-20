@@ -74,7 +74,6 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
                 .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("jwt.authentication.provider.retrieve.user.not.found",
                         null, LocaleContextHolder.getLocale())));
 
-
         // Get all his authorities
         final Collection<GrantedAuthority> authorities = Collections.singletonList(Optional.ofNullable(user)
                 .map(UserDetailed::getRole)

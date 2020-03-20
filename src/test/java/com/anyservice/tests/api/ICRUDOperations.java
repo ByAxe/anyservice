@@ -109,6 +109,20 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
     }
 
     /**
+     * A special header for unlimited possibilities
+     *
+     * @return header
+     */
+    String getInnerHeader();
+
+    /**
+     * A special key for unlimited possibilities
+     *
+     * @return key
+     */
+    String getInnerKey();
+
+    /**
      * Common operation to get UUID from a raw header "Location"
      *
      * @param headerLocation content of header
@@ -129,7 +143,10 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
      * @return {@link HttpHeaders} object with or without custom headers
      */
     default HttpHeaders getHeaders() {
-        return new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(getInnerHeader(), getInnerKey());
+
+        return httpHeaders;
     }
 
     /**

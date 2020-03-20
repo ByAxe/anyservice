@@ -1,12 +1,14 @@
 package com.anyservice.web.security;
 
 import com.anyservice.web.security.exceptions.TokenNotFoundException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
 import javax.servlet.FilterChain;
@@ -22,6 +24,12 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
     @Value("${security.jwt.header}")
     private String jwtHeader;
 
+    @Value("${security.inner.header}")
+    private String innerHeader;
+
+    @Value("${security.inner.key}")
+    private String innerKey;
+
     @Autowired
     private MessageSource messageSource;
 
@@ -33,7 +41,15 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationProcessingFil
 
     @Override
     protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        return request.getHeader(jwtHeader) != null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String JWT = request.getHeader(jwtHeader);
+        String BE = request.getHeader(innerHeader);
+
+        if (authentication == null) {
+            return !StringUtils.isEmpty(JWT) || !StringUtils.isEmpty(BE);
+        }
+        return false;
     }
 
     /**

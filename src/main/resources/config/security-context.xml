@@ -14,6 +14,9 @@
         <!--We do not need csrf protection because our tokens are immune to it-->
         <csrf disabled="true"/>
 
+        <!--Look for token in URL or params-->
+        <custom-filter before="FIRST" ref="tokenFilter"/>
+
         <!--Next, we plug in our special authentication filter within the Spring’s predefined filter chain, just before the form login filter-->
         <custom-filter before="FORM_LOGIN_FILTER" ref="jwtAuthenticationFilter"/>
 
@@ -21,13 +24,14 @@
 
         <intercept-url pattern="/**/generate/infinite/token" access="hasRole('ROLE_ADMIN')" method="POST"/>
 
-        <!-- ==========>>>>>>> Authentication -->
-        <intercept-url pattern="/**/signup" access="isAnonymous()"/>
+        <intercept-url pattern="/**/user" access="isAnonymous()" method="POST"/>
         <intercept-url pattern="/**/login" access="isAnonymous()"/>
+        <intercept-url pattern="/**/logout" access="isAuthenticated()"/>
         <intercept-url pattern="/actuator/**" access="permitAll()"/>
-        <intercept-url pattern="/api/**" access="permitAll()"/>
+        <!--        <intercept-url pattern="/**" access="permitAll()"/>-->
 
         <!-- ==========>>>>>>> read  -->
+        <intercept-url pattern="/**/user" access="isAuthenticated()" method="GET"/>
         <intercept-url pattern="/**/user/**" access="isAuthenticated()" method="GET"/>
         <!-- ==========>>>>>>> read  -->
 

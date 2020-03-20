@@ -9,7 +9,7 @@
             <class name="com.anyservice.tests.unit.PasswordServiceUnitTest"/>
 
             <!--INTEGRATION-->
-            <class name="com.anyservice.tests.integration.UserIntegrationTest"/>
+            <class name="com.anyservice.tests.integration.SecurityIntegrationTest"/>
         </classes>
     </test>
 </suite>

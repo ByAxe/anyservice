@@ -10,7 +10,6 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
-import com.anyservice.service.api.IPasswordService;
 import com.anyservice.service.user.IUserService;
 import com.anyservice.tests.api.ICRUDTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,18 +36,23 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBrief, UserDetailed> {
 
     @Autowired
-    private IPasswordService passwordService;
-
-    @Autowired
     private IUserService userService;
-
-    private String baseUrl = "/";
 
     @Value("${password.length.min}")
     private int passwordMinLength;
 
     @Value("${password.length.max}")
     private int passwordMaxLength;
+
+    @Override
+    public String getInnerHeader() {
+        return environment.getProperty("security.inner.header");
+    }
+
+    @Override
+    public String getInnerKey() {
+        return environment.getProperty("security.inner.key");
+    }
 
     @Override
     public String getUrl() {

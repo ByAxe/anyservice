@@ -29,11 +29,15 @@ password:
     max: 50
 
 security:
+  inner:
+    header: x-y-z-token
+    key: 68fbea20-b11a-4326-987d-7ff3cfeab81b
   ttl:
     period: 7200000
   jwt:
-    universal:
-      password: 706f29cb-a04f-4f1a-9e3f-7ed7fafcf3ba
+    uuid:
+      live:
+        seconds: 120
     param:
       token:
         name: token

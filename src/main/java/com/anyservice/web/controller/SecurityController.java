@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/user")
 public class SecurityController {
     private static final Logger logger = LoggerFactory.getLogger(SecurityController.class);
 

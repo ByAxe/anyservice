@@ -1,11 +1,11 @@
 package com.anyservice.web.security;
 
 import com.anyservice.core.DateUtils;
+import com.anyservice.dto.AuthDetails;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.service.user.UserService;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.api.LoginException;
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -28,16 +28,15 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
 
     private final UserService userService;
     private final MessageSource messageSource;
+    private final UserDetailed innerUser;
 
     @Value("${security.jwt.never}")
     private Long never;
 
-    @Value("${spring.zone.offset.hours}")
-    private int zone;
-
-    public JwtAuthenticationProvider(UserService userService, MessageSource messageSource) {
+    public JwtAuthenticationProvider(UserService userService, MessageSource messageSource, UserDetailed innerUser) {
         this.userService = userService;
         this.messageSource = messageSource;
+        this.innerUser = innerUser;
     }
 
     /**
@@ -66,13 +65,33 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
      */
     @Override
     protected UserDetails retrieveUser(String s, UsernamePasswordAuthenticationToken token) throws AuthenticationException {
+        final AuthDetails authDetails = (AuthDetails) token.getDetails();
+
         final String principal = String.valueOf(token.getPrincipal());
         final String credentials = String.valueOf(token.getCredentials());
 
-        // Find user
-        UserDetailed user = userService.findById(UUID.fromString(principal))
-                .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("jwt.authentication.provider.retrieve.user.not.found",
-                        null, LocaleContextHolder.getLocale())));
+        final UserDetailed user;
+        final boolean isCredentialsNonExpired;
+
+        // If it's an inner user - treat it in special way
+        if (authDetails.isInner()) {
+            user = innerUser;
+            isCredentialsNonExpired = true;
+        } else {
+            // Otherwise, find user
+            user = userService.findById(UUID.fromString(principal))
+                    .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("jwt.authentication.provider.retrieve.user.not.found",
+                            null, LocaleContextHolder.getLocale())));
+
+            // Check whether passwordUpdateDates are equal
+            final Long passwordUpdateDate = Long.valueOf(JwtUtil.safeExtractKey(authDetails.getBody(), "passwordUpdateDate"));
+
+            final Long actual = Optional.ofNullable(user.getPasswordUpdateDate())
+                    .map(DateUtils::convertOffsetDateTimeToMills)
+                    .orElse(never);
+
+            isCredentialsNonExpired = passwordUpdateDate.equals(actual);
+        }
 
         // Get all his authorities
         final Collection<GrantedAuthority> authorities = Collections.singletonList(Optional.ofNullable(user)
@@ -81,23 +100,11 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
                 .orElseThrow(() -> new LoginException(messageSource.getMessage("jwt.authentication.provider.retrieve.user",
                         null, LocaleContextHolder.getLocale()))));
 
-        final Claims body = (Claims) token.getDetails();
-
         // Set all the needed flags
         final boolean isAccountNonExpired = true;
 
         final boolean isEnabled = user.getState().isEnabled();
         final boolean isAccountNonLocked = user.getState().isNonLocked();
-
-
-        // Check whether passwordUpdateDates are equal
-        final Long passwordUpdateDate = Long.valueOf(JwtUtil.safeExtractKey(body, "passwordUpdateDate"));
-
-        final Long actual = Optional.ofNullable(user.getPasswordUpdateDate())
-                .map(DateUtils::convertOffsetDateTimeToMills)
-                .orElse(never);
-
-        final boolean isCredentialsNonExpired = passwordUpdateDate.equals(actual);
 
         // Return SpringSecurity representation of a user
         return new org.springframework.security.core.userdetails.User(principal, credentials, isEnabled, isAccountNonExpired, isCredentialsNonExpired, isAccountNonLocked, authorities);

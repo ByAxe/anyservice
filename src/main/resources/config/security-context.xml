@@ -22,13 +22,12 @@
 
         <anonymous enabled="true"/>
 
-        <intercept-url pattern="/**/generate/infinite/token" access="hasRole('ROLE_ADMIN')" method="POST"/>
+        <intercept-url pattern="/**/generate/infinite/token" access="hasRole('ROLE_SUPER_ADMIN')" method="POST"/>
 
-        <intercept-url pattern="/**/user" access="isAnonymous()" method="POST"/>
-        <intercept-url pattern="/**/login" access="isAnonymous()"/>
+        <intercept-url pattern="/**/user" access="isAnonymous() || hasRole('ROLE_SUPER_ADMIN')" method="POST"/>
+        <intercept-url pattern="/**/login" access="isAnonymous() || hasRole('ROLE_SUPER_ADMIN')"/>
         <intercept-url pattern="/**/logout" access="isAuthenticated()"/>
-        <intercept-url pattern="/actuator/**" access="permitAll()"/>
-        <!--        <intercept-url pattern="/**" access="permitAll()"/>-->
+        <intercept-url pattern="/actuator/**" access="hasRole('ROLE_SUPER_ADMIN')"/>
 
         <!-- ==========>>>>>>> read  -->
         <intercept-url pattern="/**/user" access="isAuthenticated()" method="GET"/>
@@ -36,7 +35,6 @@
         <!-- ==========>>>>>>> read  -->
 
         <!-- ==========>>>>>>> create  -->
-        <intercept-url pattern="/**/user/**" access="hasAnyRole('ROLE_ADMIN')" method="POST"/>
         <!-- ==========>>>>>>> create  -->
 
         <!-- ==========>>>>>>> update  -->
@@ -44,9 +42,10 @@
         <!-- ==========>>>>>>> update  -->
 
         <!-- ==========>>>>>>> delete  -->
-        <intercept-url pattern="/**/user/**" access="hasAnyRole('ROLE_ADMIN')" method="DELETE"/>
+        <intercept-url pattern="/**/user/**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')" method="DELETE"/>
         <!-- ==========>>>>>>> delete  -->
 
+        <intercept-url pattern="/**" access="hasRole('ROLE_SUPER_ADMIN')"/>
     </http>
 
     <!--This bean is the declaration of our authentication filter; since it is extending Spring’s AbstractAuthenticationProcessingFilter, we need to declare it in XML to wire its properties (auto wire does not work here). We will explain later what the filter does-->

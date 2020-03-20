@@ -1,17 +1,21 @@
 package com.anyservice.web.security;
 
 import com.anyservice.core.DateUtils;
+import com.anyservice.dto.AuthDetails;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.service.user.UserHolder;
 import com.anyservice.service.user.UserService;
 import com.anyservice.web.security.exceptions.ClaimsExtractionException;
 import com.anyservice.web.security.exceptions.TTLExpirationException;
+import com.anyservice.web.security.exceptions.TokenNotFoundException;
 import com.anyservice.web.security.exceptions.api.LoginException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,6 +48,9 @@ public class JwtUtil {
     @Value("${spring.zone.offset.hours}")
     private int zone;
 
+    @Value("${security.inner.key}")
+    private String innerKey;
+
     public JwtUtil(UserService userService, UserHolder userHolder, MessageSource messageSource) {
         this.userService = userService;
         this.userHolder = userHolder;
@@ -74,19 +81,45 @@ public class JwtUtil {
      * @return identified user
      * @throws AuthenticationException if something goes wrong - throw everything up
      */
-    public Authentication parseToken(String tokenString) throws AuthenticationException {
-        final Claims body = extractBodyFromToken(tokenString);
+    public Authentication parseToken(String tokenString, String innerToken) throws AuthenticationException {
+        AuthDetails authDetails = new AuthDetails();
+        Claims body;
+        String uuid;
 
-        validateToken(body);
+        // Look for special token
+        if (innerKey.equals(innerToken)) {
+            authDetails.setInner(true);
+            body = new DefaultClaims();
+            uuid = innerToken;
+        } else {
 
-        final String uuid = safeExtractKey(body, "uuid");
+            // If the special token is null
+            // Check if we have a usual one
+            if (tokenString == null) {
+                throw new TokenNotFoundException(
+                        messageSource.getMessage("jwt.authentication.filter.attempt.authentication",
+                                null, LocaleContextHolder.getLocale()));
+            }
 
+            // If we do have usual token - do all the regular procedures to it
+            body = extractBodyFromToken(tokenString);
+
+            validateToken(body);
+
+            uuid = safeExtractKey(body, "uuid");
+        }
+
+        // Then create Spring Security required token
         final AbstractAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 uuid, // User name
                 new StringBuffer(uuid).reverse().toString()
         );
 
-        authenticationToken.setDetails(body);
+        // Set claims to our bearer-object
+        authDetails.setBody(body);
+
+        // Set our bearer-object to spring security required one
+        authenticationToken.setDetails(authDetails);
 
         return authenticationToken;
     }

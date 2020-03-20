@@ -18,6 +18,7 @@
         - [x] Cover changePassword method with tests
         - [x] Add resultMatches to ICRUDOperations methods to extend its flexibility
         - [x] Make sure via tests, that password is not updating by any of update operations
+        - [x] Add special inner user for test&development purposes
         - [ ] Cover SecurityController with tests
         - [ ] Make all the tests pass
         - [ ] Merge spring-security branch into master

@@ -1,13 +1,17 @@
 package com.anyservice.web.security;
 
+import com.anyservice.core.enums.UserRole;
+import com.anyservice.core.enums.UserState;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.service.user.IUserService;
 import com.anyservice.service.user.UserHolder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,6 +39,17 @@ public class SecurityHelper {
         user = userDetailedOptional.orElse(null);
 
         userHolder.setUser(user);
+    }
+
+    @Bean
+    public UserDetailed getInnerUser() {
+        return UserDetailed.builder()
+                .uuid(UUID.randomUUID())
+                .state(UserState.ACTIVE)
+                .role(UserRole.ROLE_SUPER_ADMIN)
+                .isVerified(true)
+                .passwordUpdateDate(OffsetDateTime.now())
+                .build();
     }
 
 }

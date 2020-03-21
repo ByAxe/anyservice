@@ -51,9 +51,11 @@ public class SecurityConfig implements WebMvcConfigurer {
     public UserDetailed innerUser() {
         return UserDetailed.builder()
                 .uuid(UUID.randomUUID())
+                .userName("Inner user")
                 .state(UserState.ACTIVE)
                 .role(UserRole.ROLE_SUPER_ADMIN)
                 .isVerified(true)
+                .password("inneruserpassword")
                 .passwordUpdateDate(OffsetDateTime.now())
                 .build();
     }

@@ -1,5 +1,6 @@
 package com.anyservice.web.controller;
 
+import com.anyservice.core.enums.UserRole;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.service.user.UserHolder;
 import com.anyservice.service.user.UserService;
@@ -8,9 +9,10 @@ import com.anyservice.web.security.dto.InfiniteToken;
 import com.anyservice.web.security.dto.Login;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.http.HttpStatus.OK;
 
 @Log4j2
 @RestController
@@ -50,7 +52,7 @@ public class SecurityController {
 
         // Does not make anything for now
 
-        return new ResponseEntity<>(null, httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(null, httpHeaders, OK);
     }
 
     @PutMapping("/refresh")
@@ -65,8 +67,17 @@ public class SecurityController {
         return jwtUtil.generateInfiniteToken(user, infiniteToken.getTtl());
     }
 
+    /**
+     * Allowed only for authenticated users
+     *
+     * @return role of a user that's made a request
+     */
     @GetMapping("/authenticated")
     public ResponseEntity<?> checkIfAuthenticated() {
-        return new ResponseEntity<>(HttpStatus.OK);
+        UserRole role = holder.getUser().getRole();
+
+        int ordinal = role.ordinal();
+
+        return new ResponseEntity<>(ordinal, OK);
     }
 }

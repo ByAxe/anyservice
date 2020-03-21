@@ -18,7 +18,9 @@ public class UserAspect {
             throws Throwable {
         UserDetailed user = (UserDetailed) proceedingJoinPoint.proceed();
 
-        user.setPassword(null);
+        if (user != null) {
+            user.setPassword(null);
+        }
 
         return user;
     }

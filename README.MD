@@ -9,8 +9,8 @@
         - [x] Add Spring Security classes for JWT support
         - [x] Add new fields to test_sql
         - [x] Add comparison of hashes on Log In
-        - [x] Create SecurityController for logins and working with JWT
-        - [x] Make the project compiliable
+        - [x] Create SecurityController for login and working with JWT
+        - [x] Make the project compilable
         - [x] Make all the tests pass
         - [x] Cover case when role || state is null when passed Front -> DB and vise versa
         - [x] Cover validatePasswordForChange method with tests
@@ -19,8 +19,8 @@
         - [x] Add resultMatches to ICRUDOperations methods to extend its flexibility
         - [x] Make sure via tests, that password is not updating by any of update operations
         - [x] Add special inner user for test&development purposes
-        - [~] Cover SecurityController with tests
-        - [ ] Make all the tests pass
+        - [+] Cover SecurityController with tests
+        - [+] Make all the tests pass
         - [ ] Merge spring-security branch into master
 
 - [ ] Add "trials" for password changing

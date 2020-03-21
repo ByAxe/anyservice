@@ -1,29 +1,8 @@
-- [x] ...deleted 40 tasks
+# AnyService marketplace backend
 
-    - [~] Add Spring Security to application
-        - [x] Add "country", "address", "role", "state", "passwordUpdateDate" to sql
-        - [x] Add countries dictionary and some values to it
-        - [x] Add new fields to Entity, DTO, Converters
-        - [x] Add changePassword method
-        - [x] Remove password updating from update method (@DynamicUpdate should make it now)
-        - [x] Add Spring Security classes for JWT support
-        - [x] Add new fields to test_sql
-        - [x] Add comparison of hashes on Log In
-        - [x] Create SecurityController for login and working with JWT
-        - [x] Make the project compilable
-        - [x] Make all the tests pass
-        - [x] Cover case when role || state is null when passed Front -> DB and vise versa
-        - [x] Cover validatePasswordForChange method with tests
-        - [x] Clean up and make reusable integration tests' abstraction
-        - [x] Cover changePassword method with tests
-        - [x] Add resultMatches to ICRUDOperations methods to extend its flexibility
-        - [x] Make sure via tests, that password is not updating by any of update operations
-        - [x] Add special inner user for test&development purposes
-        - [+] Cover SecurityController with tests
-        - [+] Make all the tests pass
-        - [ ] Merge spring-security branch into master
-
-- [ ] Add "trials" for password changing
+## Tasks list
+- [x] ...deleted 61 tasks
+- [~] Add "trials" for password changing
 - [ ] Add verification logic: set status "waiting" when isVerified==false & not allow to set legal status etc.
 - [ ] Replace logging calls with lombok annotation @Log4j2
 - [ ] Create IUserService interface and replace all calls to UserService by IUserService calls

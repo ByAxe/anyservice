@@ -21,6 +21,9 @@ spring:
   zone:
     offset:
       hours: 1
+  user:
+    verification:
+      seconds: 259200 # 3 days
 
 password:
   rounds: 12

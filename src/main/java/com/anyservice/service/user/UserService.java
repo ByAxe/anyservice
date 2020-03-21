@@ -14,12 +14,15 @@ import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.WrongPasswordException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.time.OffsetDateTime;
 import java.util.*;
 
@@ -36,15 +39,24 @@ public class UserService implements IUserService {
     private final IUserValidator userValidator;
     private final IPasswordService passwordService;
     private final MessageSource messageSource;
+    private final CacheManager cacheManager;
+
+    private Cache verificationCodeMap;
 
     public UserService(UserRepository userRepository, ConversionService conversionService,
                        IUserValidator userValidator, IPasswordService passwordService,
-                       MessageSource messageSource) {
+                       MessageSource messageSource, CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.conversionService = conversionService;
         this.userValidator = userValidator;
         this.passwordService = passwordService;
         this.messageSource = messageSource;
+        this.cacheManager = cacheManager;
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        verificationCodeMap = cacheManager.getCache("verificationCodeMap");
     }
 
     @Override
@@ -76,16 +88,32 @@ public class UserService implements IUserService {
         entity.setPassword(hash);
 
         // Set system fields
-        setRequiredFieldsToEntity(entity);
+        setRequiredForCreationFieldsToEntity(entity);
 
         // Save new user
         UserEntity savedEntity = userRepository.saveAndFlush(entity);
 
         // Return saved user back
-        return conversionService.convert(savedEntity, UserDetailed.class);
+        UserDetailed savedUser = conversionService.convert(savedEntity, UserDetailed.class);
+
+        // Generate verification code
+        UUID verificationCode = UUID.randomUUID();
+
+        // TODO Send verification code to user's email
+
+
+        // Save verification code to cache for further verification
+        verificationCodeMap.putIfAbsent(savedUser.getUuid(), verificationCode);
+
+        return savedUser;
     }
 
-    private void setRequiredFieldsToEntity(UserEntity entity) {
+    /**
+     * Set to {@link UserEntity} all system required fields for successful creation
+     *
+     * @param entity filled {@link UserEntity} for creation
+     */
+    private void setRequiredForCreationFieldsToEntity(UserEntity entity) {
         UUID uuid = UUID.randomUUID();
         entity.setUuid(uuid);
 
@@ -97,7 +125,9 @@ public class UserService implements IUserService {
         entity.setPasswordUpdateDate(now);
 
         entity.setRole(UserRole.ROLE_USER.name());
-        entity.setState(UserState.ACTIVE.name());
+        entity.setState(UserState.WAITING.name());
+
+        entity.setIsVerified(false);
     }
 
     @Override
@@ -117,7 +147,7 @@ public class UserService implements IUserService {
 
         long lastUpdateDate = convertOffsetDateTimeToMills(versionOfUserFromDB.getDtUpdate());
 
-        // Compare the versions ofNullable() entities
+        // Compare the versions of entities
         if (version.getTime() != lastUpdateDate) {
             String message = messageSource.getMessage("user.update.version",
                     null, LocaleContextHolder.getLocale());
@@ -310,7 +340,7 @@ public class UserService implements IUserService {
 
     @Override
     public void deleteAll() {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -340,6 +370,58 @@ public class UserService implements IUserService {
         UserEntity user = userRepository.findFirstByUserName(userName);
 
         return conversionService.convert(user, UserDetailed.class);
+    }
+
+    @Override
+    @Transactional
+    @RemovePasswordFromReturningValue
+    public UserDetailed verifyUser(UUID uuid, UUID code) {
+
+        // Check if such user exists
+        if (!existsById(uuid)) {
+            throw new IllegalArgumentException(messageSource.getMessage("user.not.exists",
+                    null, LocaleContextHolder.getLocale()));
+        }
+
+        // Get user via uuid (we certainly know it exists)
+        UserDetailed user = findByIdWithPassword(uuid).get();
+
+        UserState state = user.getState();
+
+        // Check if user is not blocked
+        if (state == UserState.BLOCKED) {
+            throw new IllegalArgumentException(messageSource.getMessage("security.user.blocked",
+                    null, LocaleContextHolder.getLocale()));
+        }
+
+        if (state == UserState.ACTIVE) {
+            throw new IllegalArgumentException(messageSource.getMessage("security.user.already.active",
+                    null, LocaleContextHolder.getLocale()));
+        }
+
+        // Get expected verification code from a cache
+        UUID expectedVerificationCode = verificationCodeMap.get(uuid, UUID.class);
+
+        // Check if verification code is correct
+        if (!expectedVerificationCode.equals(code)) {
+            throw new IllegalArgumentException(messageSource.getMessage("user.verification.code.wrong",
+                    null, LocaleContextHolder.getLocale()));
+        }
+
+        // update user
+        user.setState(UserState.ACTIVE);
+        UserEntity entity = conversionService.convert(user, UserEntity.class);
+
+        // Save updated user to DB
+        UserEntity savedEntity = userRepository.saveAndFlush(entity);
+
+        // return updated user
+        UserDetailed updatedUser = conversionService.convert(savedEntity, UserDetailed.class);
+
+        // remove verification code from cache
+        verificationCodeMap.evictIfPresent(uuid);
+
+        return updatedUser;
     }
 
     /**

@@ -1,10 +1,10 @@
 package com.anyservice.web.security;
 
 import com.anyservice.core.DateUtils;
-import com.anyservice.dto.AuthDetails;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.service.user.UserHolder;
 import com.anyservice.service.user.UserService;
+import com.anyservice.web.security.dto.AuthDetails;
 import com.anyservice.web.security.exceptions.ClaimsExtractionException;
 import com.anyservice.web.security.exceptions.TTLExpirationException;
 import com.anyservice.web.security.exceptions.TokenNotFoundException;

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -90,6 +91,23 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         HttpHeaders httpHeaders = new HttpHeaders();
 
         return new ResponseEntity<>(userDetailed, httpHeaders, OK);
+    }
+
+    @PatchMapping("/{uuid}/{code}")
+    public ResponseEntity<?> verifyUser(@NotNull @PathVariable UUID uuid, @NotNull @PathVariable UUID code) {
+        UserDetailed user;
+
+        try {
+            user = userService.verifyUser(uuid, code);
+        } catch (Exception e) {
+            logger.info(messageSource.getMessage("user.verification",
+                    null, LocaleContextHolder.getLocale()));
+            throw e;
+        }
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        return new ResponseEntity<>(user, httpHeaders, OK);
     }
 
     @Override

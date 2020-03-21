@@ -2,8 +2,14 @@
 
 ## Tasks list
 - [x] ...deleted 61 tasks
-- [~] Add "trials" for password changing
-- [ ] Add verification logic: set status "waiting" when isVerified==false & not allow to set legal status etc.
+- [~] Add user verification logic
+    - [+] Create verification method
+    - [ ] Cover with tests verifyUser method
+    - [ ] Create email sender
+    - [ ] Covert with tests email sending
+    - [ ] Check isVerified & not allow to set legal status etc. if it's false
+    - [ ] Write integration test for whole verification chain
+- [ ] Add "trials" for password changing
 - [ ] Replace logging calls with lombok annotation @Log4j2
 - [ ] Create IUserService interface and replace all calls to UserService by IUserService calls
 - [ ] Add comments to script.sql & test_script.sql

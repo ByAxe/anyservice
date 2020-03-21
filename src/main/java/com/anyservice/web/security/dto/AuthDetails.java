@@ -1,4 +1,4 @@
-package com.anyservice.dto;
+package com.anyservice.web.security.dto;
 
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;

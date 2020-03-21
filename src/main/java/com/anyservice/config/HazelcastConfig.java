@@ -15,6 +15,9 @@ public class HazelcastConfig extends CachingConfigurerSupport {
     @Value("${security.jwt.uuid.live.seconds}")
     private int uuidLive;
 
+    @Value("${security.jwt.uuid.live.seconds}")
+    private int verificationCodeLive;
+
     @Bean
     public Config hazelCastConfig() {
         return new Config()
@@ -34,6 +37,16 @@ public class HazelcastConfig extends CachingConfigurerSupport {
                                 .setEvictionPolicy(EvictionPolicy.NONE)
                                 .setMergePolicyConfig(new MergePolicyConfig()
                                         .setPolicy(PassThroughMergePolicy.class.getName()))
-                                .setTimeToLiveSeconds(uuidLive));
+                                .setTimeToLiveSeconds(uuidLive))
+                .addMapConfig(
+                        new MapConfig()
+                                .setName("verificationCodeMap")
+                                .setBackupCount(3)
+                                .setMaxSizeConfig(new MaxSizeConfig(10000, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
+                                .setReadBackupData(true)
+                                .setEvictionPolicy(EvictionPolicy.LRU)
+                                .setMergePolicyConfig(new MergePolicyConfig()
+                                        .setPolicy(PassThroughMergePolicy.class.getName()))
+                                .setTimeToLiveSeconds(verificationCodeLive));
     }
 }

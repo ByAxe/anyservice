@@ -1,9 +1,9 @@
 package com.anyservice.web.security;
 
 import com.anyservice.core.DateUtils;
-import com.anyservice.dto.AuthDetails;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.service.user.UserService;
+import com.anyservice.web.security.dto.AuthDetails;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.api.LoginException;
 import org.springframework.beans.factory.annotation.Value;

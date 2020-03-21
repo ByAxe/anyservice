@@ -40,4 +40,14 @@ public interface IUserService extends ICRUDService<UserBrief, UserDetailed, UUID
      * @return user found by userName
      */
     UserDetailed findByUserName(String userName);
+
+    /**
+     * User verification method
+     *
+     * @param uuid identifier of a user, that must be verified
+     * @param code verification code
+     * @return verified {@link UserDetailed}
+     * @throws IllegalArgumentException if something goes wrong with validation of passed values
+     */
+    UserDetailed verifyUser(UUID uuid, UUID code);
 }

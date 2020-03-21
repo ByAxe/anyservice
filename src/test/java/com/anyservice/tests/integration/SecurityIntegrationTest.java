@@ -89,6 +89,8 @@ public class SecurityIntegrationTest extends UserIntegrationTest {
         // Put token into headers
         headers.add(jwtHeader, token);
 
+        // TODO Add verification logic
+
         // Access special method that is allowed only for authenticated users
         checkIfAuthenticated(headers, expectOk);
     }

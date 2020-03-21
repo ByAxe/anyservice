@@ -4,6 +4,7 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.web.security.JwtUtil;
 import com.anyservice.web.security.dto.Login;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.testng.annotations.Test;
 
 import static com.anyservice.core.RandomValuesGenerator.randomString;
@@ -57,20 +58,20 @@ public class SecurityIntegrationTest extends UserIntegrationTest {
 
     @Test
     public void refreshTokenWithoutUserTest() throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
+
         getMockMvc().perform(put(getExtendedUrl() + "/refresh")
-                .headers(getHeaders())
+                .headers(httpHeaders)
                 .contentType(getContentType()))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void refreshTokenTest() throws Exception {
-
-
         getMockMvc().perform(put(getExtendedUrl() + "/refresh")
                 .headers(getHeaders())
                 .contentType(getContentType()))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isOk());
     }
 
 }

@@ -1,5 +1,8 @@
 package com.anyservice.config;
 
+import com.anyservice.core.enums.UserRole;
+import com.anyservice.core.enums.UserState;
+import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.web.security.interceptors.SecurityInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -11,6 +14,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.Filter;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * @author cdov
@@ -35,4 +40,21 @@ public class SecurityConfig implements WebMvcConfigurer {
         return registration;
     }
 
+    /**
+     * Create special inner user instance with super role
+     * That can access anything
+     * (For development purposes)
+     *
+     * @return inner user instance
+     */
+    @Bean
+    public UserDetailed innerUser() {
+        return UserDetailed.builder()
+                .uuid(UUID.randomUUID())
+                .state(UserState.ACTIVE)
+                .role(UserRole.ROLE_SUPER_ADMIN)
+                .isVerified(true)
+                .passwordUpdateDate(OffsetDateTime.now())
+                .build();
+    }
 }

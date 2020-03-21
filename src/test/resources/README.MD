@@ -1,6 +1,5 @@
 Чтобы запустить тесты необходимо в настройках IDEA выставить (для TestNG)
 -
-
 - Test Kind: Suite
 - Указать путь к файлу testing.xml
 - Выставить "In single module"

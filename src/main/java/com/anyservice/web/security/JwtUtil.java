@@ -23,6 +23,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -164,10 +165,16 @@ public class JwtUtil {
     private String generateToken(UserDetailed user, Long ttl) {
         Claims claims = Jwts.claims();
 
+        OffsetDateTime passwordUpdateDate = Optional.ofNullable(user.getPasswordUpdateDate())
+                .orElse(DateUtils.convertLongToOffsetDateTime(never, zone));
+
+        // Save in token passwordUpdateDate in mills format
+        // because of a problem with further conversions of OffsetDateTime
+        long passwordUpdateDateInMills = DateUtils.convertOffsetDateTimeToMills(passwordUpdateDate);
+
         claims.put("uuid", user.getUuid());
         claims.put("ttl", ttl);
-        claims.put("passwordUpdateDate", Optional.ofNullable(user.getPasswordUpdateDate())
-                .orElse(DateUtils.convertLongToOffsetDateTime(never, zone)));
+        claims.put("passwordUpdateDate", passwordUpdateDateInMills);
 
         return Jwts.builder()
                 .setClaims(claims)

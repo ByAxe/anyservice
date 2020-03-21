@@ -30,8 +30,10 @@
         <intercept-url pattern="/actuator/**" access="hasRole('ROLE_SUPER_ADMIN')"/>
 
         <!-- ==========>>>>>>> read  -->
-        <intercept-url pattern="/**/user" access="isAuthenticated()" method="GET"/>
+        <intercept-url pattern="/**/user" access="hasAnyRole('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')" method="GET"/>
         <intercept-url pattern="/**/user/**" access="isAuthenticated()" method="GET"/>
+
+        <intercept-url pattern="/**/user/authenticated" access="isAuthenticated()" method="GET"/>
         <!-- ==========>>>>>>> read  -->
 
         <!-- ==========>>>>>>> create  -->

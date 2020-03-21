@@ -6,17 +6,16 @@ import com.anyservice.service.user.UserService;
 import com.anyservice.web.security.JwtUtil;
 import com.anyservice.web.security.dto.InfiniteToken;
 import com.anyservice.web.security.dto.Login;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Log4j2
 @RestController
 @RequestMapping("/api/v1/user")
 public class SecurityController {
-    private static final Logger logger = LoggerFactory.getLogger(SecurityController.class);
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
@@ -64,5 +63,10 @@ public class SecurityController {
     public String generateInfiniteToken(@RequestBody InfiniteToken infiniteToken) {
         UserDetailed user = userService.findByUserName(infiniteToken.getUserName());
         return jwtUtil.generateInfiniteToken(user, infiniteToken.getTtl());
+    }
+
+    @GetMapping("/authenticated")
+    public ResponseEntity<?> checkIfAuthenticated() {
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

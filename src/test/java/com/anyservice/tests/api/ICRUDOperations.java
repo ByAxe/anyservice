@@ -23,6 +23,7 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
     ResultMatcher expectCreated = status().isCreated();
     ResultMatcher expectBadRequest = status().isBadRequest();
     ResultMatcher expectNoContent = status().isNoContent();
+    ResultMatcher expectUnauthorized = status().isUnauthorized();
 
     // Use whenever expected default successful response of performing operation
     ResultMatcher expectDefault = null;

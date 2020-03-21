@@ -84,7 +84,7 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
                             null, LocaleContextHolder.getLocale())));
 
             // Check whether passwordUpdateDates are equal
-            final Long passwordUpdateDate = Long.valueOf(JwtUtil.safeExtractKey(authDetails.getBody(), "passwordUpdateDate"));
+            final Long passwordUpdateDate = Long.valueOf((JwtUtil.safeExtractKey(authDetails.getBody(), "passwordUpdateDate")));
 
             final Long actual = Optional.ofNullable(user.getPasswordUpdateDate())
                     .map(DateUtils::convertOffsetDateTimeToMills)

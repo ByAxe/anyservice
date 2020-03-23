@@ -38,10 +38,10 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     @Autowired
     private IUserService userService;
 
-    @Value("${password.length.min}")
+    @Value("${user.validation.password.length.min}")
     private int passwordMinLength;
 
-    @Value("${password.length.max}")
+    @Value("${user.validation.password.length.max}")
     private int passwordMaxLength;
 
     @Override
@@ -90,8 +90,8 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         Assert.assertEquals(actual.getContacts(), expected.getContacts());
         Assert.assertEquals(actual.getUserName(), expected.getUserName());
         Assert.assertEquals(actual.getDescription(), expected.getDescription());
-        Assert.assertEquals(actual.getIsLegalStatusVerified(), expected.getIsLegalStatusVerified());
-        Assert.assertEquals(actual.getIsVerified(), expected.getIsVerified());
+        Assert.assertEquals(actual.isLegalStatusVerified(), expected.isLegalStatusVerified());
+        Assert.assertEquals(actual.isVerified(), expected.isVerified());
         Assert.assertEquals(actual.getLegalStatus(), expected.getLegalStatus());
     }
 
@@ -113,14 +113,18 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
 
     @Override
     public UserDetailed createNewItem() {
+        boolean isVerified = randomBoolean();
+        boolean isLegalStatusVerified = isVerified;
+        LegalStatus legalStatus = isLegalStatusVerified ? randomEnum(LegalStatus.class) : null;
+
         return UserDetailed.builder()
                 .initials(createInitials())
                 .contacts(createContacts())
                 .userName(randomString(3, 50))
                 .description(randomString(0, 1000))
-                .isLegalStatusVerified(randomBoolean())
-                .isVerified(randomBoolean())
-                .legalStatus(randomEnum(LegalStatus.class))
+                .isVerified(isVerified)
+                .isLegalStatusVerified(isLegalStatusVerified)
+                .legalStatus(legalStatus)
                 .password(random(randomNumber(passwordMinLength, passwordMaxLength), true, true))
                 .address(randomString(0, 255))
                 .build();
@@ -135,9 +139,11 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     }
 
     private Contacts createContacts() {
+        String email = randomString(5, 50) + "@mail.ru";
+
         return Contacts.builder()
                 .phone(random(randomNumber(6, 50), false, true))
-                .email(randomString(5, 100))
+                .email(email)
                 .google(randomString(5, 100))
                 .facebook(randomString(5, 100))
                 .build();

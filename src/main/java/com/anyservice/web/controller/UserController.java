@@ -93,7 +93,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         return new ResponseEntity<>(userDetailed, httpHeaders, OK);
     }
 
-    @PatchMapping("/{uuid}/{code}")
+    @GetMapping("/verification/{uuid}/{code}")
     public ResponseEntity<?> verifyUser(@NotNull @PathVariable UUID uuid, @NotNull @PathVariable UUID code) {
         UserDetailed user;
 

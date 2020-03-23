@@ -20,8 +20,8 @@ public class UserDetailed extends UserBrief {
     private String description;
     private Contacts contacts;
     private LegalStatus legalStatus;
-    private Boolean isVerified;
-    private Boolean isLegalStatusVerified;
+    private boolean isVerified;
+    private boolean isLegalStatusVerified;
     private String password;
     private String address;
 }

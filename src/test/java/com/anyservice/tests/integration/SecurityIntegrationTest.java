@@ -2,6 +2,7 @@ package com.anyservice.tests.integration;
 
 import com.anyservice.core.enums.UserRole;
 import com.anyservice.core.enums.UserState;
+import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
@@ -10,6 +11,8 @@ import com.anyservice.web.security.dto.Login;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.ResultActions;
@@ -33,13 +36,16 @@ public class SecurityIntegrationTest extends UserIntegrationTest {
     private Long never;
 
     @Autowired
+    private CacheManager cacheManager;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private ConversionService conversionService;
 
     /**
-     * Create user and try to log in
+     * Create user, verify it and try to log in
      *
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
@@ -59,7 +65,8 @@ public class SecurityIntegrationTest extends UserIntegrationTest {
         user.setPassword(password);
 
         // Create user
-        create(user, expectDefault);
+        DetailedWrapper<UserDetailed> userDetailedDetailedWrapper = create(user, expectDefault);
+        UUID uuid = userDetailedDetailedWrapper.getUuid();
 
         // Get user name of created user
         String userName = user.getUserName();
@@ -89,10 +96,60 @@ public class SecurityIntegrationTest extends UserIntegrationTest {
         // Put token into headers
         headers.add(jwtHeader, token);
 
-        // TODO Add verification logic
+        // Verify created user
+        verifyUser(uuid);
 
         // Access special method that is allowed only for authenticated users
         checkIfAuthenticated(headers, expectOk);
+    }
+
+    /**
+     * Verify user with given identifier
+     *
+     * @param uuid user identifier
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    private void verifyUser(UUID uuid) throws Exception {
+        // Select user via identifier
+        UserDetailed selectedUser = select(uuid);
+
+        // Get verification keys storage
+        Cache verificationCodeMap = cacheManager.getCache("verificationCodeMap");
+
+        // Find needed verification code
+        UUID verificationCode = verificationCodeMap.get(uuid, UUID.class);
+
+        // Assert it's present
+        Assert.assertNotNull(verificationCode);
+
+        // Verify user with this verification code
+        UserDetailed actual = verifyUser(uuid, verificationCode, expectOk);
+
+        // Assert that verified user is the one we needed to verify
+        assertEqualsDetailed(actual, selectedUser);
+    }
+
+    /**
+     * Verify user with given verification code
+     *
+     * @param uuid   user identifier
+     * @param code   verification code
+     * @param expect what response to expect
+     * @return verified user
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    private UserDetailed verifyUser(UUID uuid, UUID code, ResultMatcher expect) throws Exception {
+        String contentAsString = getMockMvc().perform(
+                get(getExtendedUrl() + "/verification/" + uuid + "/" + code)
+                        .headers(getHeaders())
+                        .contentType(getContentType()))
+                .andExpect(expect)
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return getObjectMapper().readValue(contentAsString,
+                getObjectMapper().getTypeFactory().constructType(getDetailedClass()));
     }
 
     /**

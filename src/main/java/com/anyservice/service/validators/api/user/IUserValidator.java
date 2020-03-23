@@ -1,6 +1,7 @@
 package com.anyservice.service.validators.api.user;
 
 import com.anyservice.dto.user.UserDetailed;
+import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.service.validators.api.IValidator;
 
@@ -14,17 +15,17 @@ public interface IUserValidator extends IValidator<UserDetailed> {
      *
      * @param userName userName of a user
      * @param userUuid user identifier
-     * @param errors   list of errors during validation
+     * @return errors   storage for errors obtained during validation
      */
-    void validateUserName(String userName, UUID userUuid, Map<String, Object> errors);
+    Map<String, Object> validateUserName(String userName, UUID userUuid);
 
     /**
      * Validate the password and put errors to passed errors object-storage
      *
      * @param password that must be validated
-     * @param errors   obtained during validation
+     * @return errors   storage for errors obtained during validation
      */
-    void validatePassword(String password, Map<String, Object> errors);
+    Map<String, Object> validatePassword(String password);
 
     /**
      * Validation of password for change
@@ -32,7 +33,7 @@ public interface IUserValidator extends IValidator<UserDetailed> {
      * @param oldPassword        the old password of user
      * @param newPassword        the new password of user
      * @param passwordHashFromDB the saved hash of a password from some storage
-     * @return errors obtained during validation
+     * @return storage for errors obtained during validation
      */
     Map<String, Object> validatePasswordForChange(String oldPassword, String newPassword,
                                                   String passwordHashFromDB);
@@ -41,16 +42,49 @@ public interface IUserValidator extends IValidator<UserDetailed> {
      * Validate initials for user
      *
      * @param initials of a user
-     * @param errors   all the errors gathered in process of validation
+     * @return errors   all the errors gathered in process of validation
      */
-    void validateInitials(Initials initials, Map<String, Object> errors);
+    Map<String, Object> validateInitials(Initials initials);
 
     /**
      * Ensure that given field contains only letters
      *
      * @param field     field content REQUIRED
      * @param fieldName field name REQUIRED
-     * @param errors    errors during validation
+     * @return errors    errors during validation
      */
-    void validateLettersOnlyField(String field, String fieldName, Map<String, Object> errors);
+    Map<String, Object> validateLettersOnlyField(String field, String fieldName);
+
+    /**
+     * Validate presence and content of email address
+     *
+     * @param contacts objects, containing email and other contact fields
+     * @return storage for errors obtained during validation
+     */
+    Map<String, Object> validateEmail(Contacts contacts);
+
+    /**
+     * Validate the content of an email address
+     *
+     * @param email address
+     * @return storage for errors obtained during validation
+     */
+    Map<String, Object> validateEmailContent(String email);
+
+    /**
+     * Validation of a verified user
+     *
+     * @param verifiedUser user that will be validated
+     * @return storage for errors obtained during validation
+     */
+    Map<String, Object> verifiedValidation(UserDetailed verifiedUser);
+
+    /**
+     * Validation of a non verified user
+     *
+     * @param nonVerifiedUser user that will be validated
+     * @return storage for errors obtained during validation
+     */
+    Map<String, Object> nonVerifiedValidation(UserDetailed nonVerifiedUser);
+
 }

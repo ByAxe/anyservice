@@ -7,12 +7,12 @@ import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.service.api.IPasswordService;
 import com.anyservice.service.validators.api.user.IUserValidator;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,6 +36,8 @@ public class UserValidatorUnitTest extends TestConfig {
      */
     @DataProvider
     public static Object[][] createValidationDataProvider() {
+        String email = randomString(5, 50) + "@mail.ru";
+
         return new Object[][]{
                 // Empty user - wait for FAIL
                 {UserDetailed.builder().build(), FAIL},
@@ -49,7 +51,7 @@ public class UserValidatorUnitTest extends TestConfig {
                                 .build())
                         .contacts(Contacts.builder()
                                 .phone(random(randomNumber(6, 50), false, true))
-                                .email(randomString(5, 100))
+                                .email(email)
                                 .google(randomString(5, 100))
                                 .facebook(randomString(5, 100))
                                 .build())
@@ -71,7 +73,7 @@ public class UserValidatorUnitTest extends TestConfig {
                                 .build())
                         .contacts(Contacts.builder()
                                 .phone(random(randomNumber(6, 50), false, true))
-                                .email(randomString(5, 100))
+                                .email(email)
                                 .google(randomString(5, 100))
                                 .facebook(randomString(5, 100))
                                 .build())
@@ -265,6 +267,8 @@ public class UserValidatorUnitTest extends TestConfig {
 
         boolean actual = errors.isEmpty();
 
+        System.out.println(StringUtils.join(errors));
+
         Assert.assertEquals(actual, expected);
     }
 
@@ -274,50 +278,53 @@ public class UserValidatorUnitTest extends TestConfig {
 
         boolean actual = errors.isEmpty();
 
+        System.out.println(StringUtils.join(errors));
+
         Assert.assertEquals(actual, expected);
     }
 
 
     @Test(dataProvider = "passwordValidationDataProvider")
     public void passwordValidationTest(String password, boolean expected) {
-        Map<String, Object> errors = new HashMap<>();
 
-        userValidator.validatePassword(password, errors);
+        Map<String, Object> errors = userValidator.validatePassword(password);
 
         boolean actual = errors.isEmpty();
+
+        System.out.println(StringUtils.join(errors));
 
         Assert.assertEquals(actual, expected);
     }
 
     @Test(dataProvider = "lettersOnlyValidationDataProvider")
     public void lettersOnlyValidationTest(String field, String fieldName, boolean expected) {
-        Map<String, Object> errors = new HashMap<>();
-
-        userValidator.validateLettersOnlyField(field, fieldName, errors);
+        Map<String, Object> errors = userValidator.validateLettersOnlyField(field, fieldName);
 
         boolean actual = errors.isEmpty();
+
+        System.out.println(StringUtils.join(errors));
 
         Assert.assertEquals(actual, expected);
     }
 
     @Test(dataProvider = "initialsValidationDataProvider")
     public void initialsValidationTest(Initials initials, boolean expected) {
-        Map<String, Object> errors = new HashMap<>();
-
-        userValidator.validateInitials(initials, errors);
+        Map<String, Object> errors = userValidator.validateInitials(initials);
 
         boolean actual = errors.isEmpty();
+
+        System.out.println(StringUtils.join(errors));
 
         Assert.assertEquals(actual, expected);
     }
 
     @Test(dataProvider = "userNameValidationDataProvider")
     public void userNameValidationTest(String userName, UUID userUuid, boolean expected) {
-        Map<String, Object> errors = new HashMap<>();
-
-        userValidator.validateUserName(userName, userUuid, errors);
+        Map<String, Object> errors = userValidator.validateUserName(userName, userUuid);
 
         boolean actual = errors.isEmpty();
+
+        System.out.println(StringUtils.join(errors));
 
         Assert.assertEquals(actual, expected);
     }
@@ -329,10 +336,11 @@ public class UserValidatorUnitTest extends TestConfig {
         String passwordHashFromDB = passwordService.hash(passwordFromDB);
 
         // Test the method
-        Map<String, Object> errors;
-        errors = userValidator.validatePasswordForChange(oldPassword, newPassword, passwordHashFromDB);
+        Map<String, Object> errors = userValidator.validatePasswordForChange(oldPassword, newPassword, passwordHashFromDB);
 
         boolean actual = errors.isEmpty();
+
+        System.out.println(StringUtils.join(errors));
 
         Assert.assertEquals(actual, expected);
     }

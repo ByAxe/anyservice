@@ -8,6 +8,7 @@ import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
 import com.anyservice.service.aop.markers.RemovePasswordFromReturningValue;
+import com.anyservice.service.api.ICustomMailSender;
 import com.anyservice.service.api.IPasswordService;
 import com.anyservice.service.validators.api.user.IUserValidator;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
@@ -22,7 +23,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.time.OffsetDateTime;
 import java.util.*;
 
@@ -40,23 +40,19 @@ public class UserService implements IUserService {
     private final IPasswordService passwordService;
     private final MessageSource messageSource;
     private final CacheManager cacheManager;
-
-    private Cache verificationCodeMap;
+    private final ICustomMailSender mailSender;
 
     public UserService(UserRepository userRepository, ConversionService conversionService,
                        IUserValidator userValidator, IPasswordService passwordService,
-                       MessageSource messageSource, CacheManager cacheManager) {
+                       MessageSource messageSource, CacheManager cacheManager,
+                       ICustomMailSender mailSender) {
         this.userRepository = userRepository;
         this.conversionService = conversionService;
         this.userValidator = userValidator;
         this.passwordService = passwordService;
         this.messageSource = messageSource;
         this.cacheManager = cacheManager;
-    }
-
-    @PostConstruct
-    public void postConstruct() {
-        verificationCodeMap = cacheManager.getCache("verificationCodeMap");
+        this.mailSender = mailSender;
     }
 
     @Override
@@ -99,11 +95,13 @@ public class UserService implements IUserService {
         // Generate verification code
         UUID verificationCode = UUID.randomUUID();
 
-        // TODO Send verification code to user's email
+        // Send verification code to user's email
+        mailSender.sendVerificationCode(savedUser, verificationCode);
 
+        Cache verificationCodeMap = cacheManager.getCache("verificationCodeMap");
 
         // Save verification code to cache for further verification
-        verificationCodeMap.putIfAbsent(savedUser.getUuid(), verificationCode);
+        verificationCodeMap.put(savedUser.getUuid(), verificationCode);
 
         return savedUser;
     }
@@ -399,6 +397,7 @@ public class UserService implements IUserService {
                     null, LocaleContextHolder.getLocale()));
         }
 
+        Cache verificationCodeMap = cacheManager.getCache("verificationCodeMap");
         // Get expected verification code from a cache
         UUID expectedVerificationCode = verificationCodeMap.get(uuid, UUID.class);
 

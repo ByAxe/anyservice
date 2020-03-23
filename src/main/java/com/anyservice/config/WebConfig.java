@@ -1,5 +1,6 @@
 package com.anyservice.config;
 
+import com.anyservice.service.converters.InitialsToStringConverter;
 import com.anyservice.service.converters.user.dto_entity.UserBriefToEntityConverter;
 import com.anyservice.service.converters.user.dto_entity.UserDetailedToEntityConverter;
 import com.anyservice.service.converters.user.entity_dto.UserEntityToBriefConverter;
@@ -17,5 +18,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addConverter(new UserBriefToEntityConverter());
         registry.addConverter(new UserEntityToDetailedConverter());
         registry.addConverter(new UserEntityToBriefConverter());
+        registry.addConverter(new InitialsToStringConverter());
     }
 }

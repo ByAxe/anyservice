@@ -1,11 +1,13 @@
 package com.anyservice.service.validators;
 
 import com.anyservice.dto.user.UserDetailed;
+import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
 import com.anyservice.service.user.PasswordService;
 import com.anyservice.service.validators.api.user.AUserValidator;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,14 @@ public class UserValidator extends AUserValidator<UserDetailed> {
     private final MessageSource messageSource;
     private final PasswordService passwordService;
 
-    @Value("${password.length.min}")
+    @Value("${user.validation.password.length.min}")
     private int passwordMinLength;
 
-    @Value("${password.length.max}")
+    @Value("${user.validation.password.length.max}")
     private int passwordMaxLength;
+
+    @Value("${user.validation.email.allow.local}")
+    private boolean allowLocal;
 
     public UserValidator(UserRepository userRepository, MessageSource messageSource,
                          PasswordService passwordService) {
@@ -45,13 +50,60 @@ public class UserValidator extends AUserValidator<UserDetailed> {
         Map<String, Object> errors = new HashMap<>();
 
         // UserName validation
-        validateUserName(user.getUserName(), user.getUuid(), errors);
+        errors.putAll(validateUserName(user.getUserName(), user.getUuid()));
 
         // Password validation
-        validatePassword(user.getPassword(), errors);
+        errors.putAll(validatePassword(user.getPassword()));
 
         // Validate firstName, lastName etc.
-        validateInitials(user.getInitials(), errors);
+        errors.putAll(validateInitials(user.getInitials()));
+
+        // Validate email
+        errors.putAll(validateEmail(user.getContacts()));
+
+        return errors;
+    }
+
+    @Override
+    public Map<String, Object> validateEmail(Contacts contacts) {
+        Map<String, Object> errors = new HashMap<>();
+
+        // Check presence of contacts-containing object
+        if (contacts != null) {
+            String email = contacts.getEmail();
+
+            // Check presence of an email
+            if (email != null) {
+
+                // Check email address content and put all the errors to storage, if any
+                errors.putAll(validateEmailContent(email));
+            } else {
+                errors.put("contacts.email", getMessageSource().getMessage("user.contacts.email.empty",
+                        null, getLocale()));
+            }
+        } else {
+            errors.put("contacts", getMessageSource().getMessage("user.contacts.empty",
+                    null, getLocale()));
+        }
+
+        return errors;
+    }
+
+    @Override
+    public Map<String, Object> validateEmailContent(String email) {
+        Map<String, Object> errors = new HashMap<>();
+
+        // Get email validation instance
+        EmailValidator emailValidator = EmailValidator.getInstance(allowLocal);
+
+        // Check email on validity
+        boolean valid = emailValidator.isValid(email);
+
+        // Put errors in storage if it's not valid
+        if (!valid) {
+            errors.put("contacts.email", getMessageSource().getMessage("user.contacts.email.nonvalid",
+                    null, getLocale()));
+        }
 
         return errors;
     }
@@ -65,17 +117,55 @@ public class UserValidator extends AUserValidator<UserDetailed> {
         // If user is not updating his password - it will be null, so we do not need to validate it
         // Otherwise, - validation is necessary
         if (password != null) {
-            validatePassword(password, errors);
+            errors.putAll(validatePassword(password));
         }
 
         // UserName validation
-        validateUserName(user.getUserName(), user.getUuid(), errors);
+        errors.putAll(validateUserName(user.getUserName(), user.getUuid()));
+
+        // Check verification of a user to decide what to validate
+        if (user.isVerified()) {
+            errors.putAll(verifiedValidation(user));
+        } else {
+            errors.putAll(nonVerifiedValidation(user));
+        }
 
         return errors;
     }
 
     @Override
-    public void validateUserName(String userName, UUID userUuid, Map<String, Object> errors) {
+    public Map<String, Object> verifiedValidation(UserDetailed verifiedUser) {
+        Map<String, Object> errors = new HashMap<>();
+
+        if (verifiedUser.isLegalStatusVerified() && verifiedUser.getLegalStatus() == null) {
+            errors.put("verified.legalstatus", getMessageSource().getMessage("user.verified.legalstatus.verified.empty",
+                    null, getLocale()));
+        }
+
+        return errors;
+    }
+
+    @Override
+    public Map<String, Object> nonVerifiedValidation(UserDetailed nonVerifiedUser) {
+        Map<String, Object> errors = new HashMap<>();
+
+        if (nonVerifiedUser.isLegalStatusVerified()) {
+            errors.put("nonverified.legalstatus.verified", getMessageSource().getMessage("user.nonverified.legalstatus.verified",
+                    null, getLocale()));
+        }
+
+        if (nonVerifiedUser.getLegalStatus() != null) {
+            errors.put("nonverified.legalstatus", getMessageSource().getMessage("user.nonverified.legalstatus",
+                    null, getLocale()));
+        }
+
+        return errors;
+    }
+
+    @Override
+    public Map<String, Object> validateUserName(String userName, UUID userUuid) {
+        Map<String, Object> errors = new HashMap<>();
+
         // Check userName validity
         if (userName == null || userName.isEmpty()) {
             errors.put("username", getMessageSource().getMessage("user.username.empty",
@@ -104,6 +194,8 @@ public class UserValidator extends AUserValidator<UserDetailed> {
                 }
             }
         }
+
+        return errors;
     }
 
     @Override
@@ -122,7 +214,7 @@ public class UserValidator extends AUserValidator<UserDetailed> {
                     if (passwordService.verifyHash(oldPassword, passwordHashFromDB)) {
 
                         // Validate the content of password
-                        validatePassword(newPassword, errors);
+                        errors.putAll(validatePassword(newPassword));
 
                     } else {
                         errors.put("password.old", getMessageSource().getMessage("user.password.old.wrong",
@@ -145,7 +237,9 @@ public class UserValidator extends AUserValidator<UserDetailed> {
     }
 
     @Override
-    public void validatePassword(String password, Map<String, Object> errors) {
+    public Map<String, Object> validatePassword(String password) {
+        Map<String, Object> errors = new HashMap<>();
+
         if (password == null) {
             errors.put("password", getMessageSource().getMessage("user.password.empty",
                     null, getLocale()));
@@ -168,10 +262,13 @@ public class UserValidator extends AUserValidator<UserDetailed> {
                 }
             }
         }
+        return errors;
     }
 
     @Override
-    public void validateInitials(Initials initials, Map<String, Object> errors) {
+    public Map<String, Object> validateInitials(Initials initials) {
+        Map<String, Object> errors = new HashMap<>();
+
         if (initials != null) {
             String firstName = initials.getFirstName();
 
@@ -179,7 +276,7 @@ public class UserValidator extends AUserValidator<UserDetailed> {
                 errors.put("initials.firstName", getMessageSource().getMessage("user.initials.firstname.empty",
                         null, getLocale()));
             } else {
-                validateLettersOnlyField(firstName, "firstName", errors);
+                errors.putAll(validateLettersOnlyField(firstName, "firstName"));
             }
 
             String lastName = initials.getLastName();
@@ -187,16 +284,18 @@ public class UserValidator extends AUserValidator<UserDetailed> {
 
             // TODO in the returned messages always will be these "fieldNames" despite the locale. Must be fixed.
             if (lastName != null) {
-                validateLettersOnlyField(initials.getLastName(), "lastName", errors);
+                errors.putAll(validateLettersOnlyField(initials.getLastName(), "lastName"));
             }
 
             if (middleName != null) {
-                validateLettersOnlyField(initials.getMiddleName(), "middleName", errors);
+                errors.putAll(validateLettersOnlyField(initials.getMiddleName(), "middleName"));
             }
         } else {
             errors.put("initials", getMessageSource().getMessage("user.initials.not.exist",
                     null, getLocale()));
         }
+
+        return errors;
     }
 
 }

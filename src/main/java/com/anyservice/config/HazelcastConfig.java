@@ -41,10 +41,10 @@ public class HazelcastConfig extends CachingConfigurerSupport {
                 .addMapConfig(
                         new MapConfig()
                                 .setName("verificationCodeMap")
-                                .setBackupCount(3)
+                                .setBackupCount(2)
                                 .setMaxSizeConfig(new MaxSizeConfig(10000, MaxSizeConfig.MaxSizePolicy.FREE_HEAP_SIZE))
                                 .setReadBackupData(true)
-                                .setEvictionPolicy(EvictionPolicy.LRU)
+                                .setEvictionPolicy(EvictionPolicy.NONE)
                                 .setMergePolicyConfig(new MergePolicyConfig()
                                         .setPolicy(PassThroughMergePolicy.class.getName()))
                                 .setTimeToLiveSeconds(verificationCodeLive));

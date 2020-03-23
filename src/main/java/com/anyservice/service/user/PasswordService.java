@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PasswordService implements IPasswordService {
 
-    @Value("${password.rounds}")
+    @Value("${user.validation.password.rounds}")
     private int logRounds;
 
     public String hash(String password) {

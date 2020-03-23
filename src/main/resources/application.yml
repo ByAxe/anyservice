@@ -33,7 +33,7 @@ spring:
   mail:
     host: smtp.yandex.ru
     port: 587
-    username:
+    username: byaxe@ya.ru
     password:
     protocol: smtp
     properties:

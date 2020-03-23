@@ -3,7 +3,7 @@
 ## Tasks list
 - [x] ...deleted 70 tasks
 - [x] Fix problem with not sending verification messages
-- [ ] Create IUserService interface and replace all calls to UserService by IUserService calls
+- [x] Create IUserService interface and replace all calls to UserService by IUserService calls
 - [ ] Add comments to script.sql & test_script.sql
 - [ ] Deploy basic application on Google Cloud
 - [ ] Add amazon s3 to application

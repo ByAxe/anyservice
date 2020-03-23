@@ -2,7 +2,7 @@ package com.anyservice.web.security;
 
 import com.anyservice.core.DateUtils;
 import com.anyservice.dto.user.UserDetailed;
-import com.anyservice.service.user.UserService;
+import com.anyservice.service.user.IUserService;
 import com.anyservice.web.security.dto.AuthDetails;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.api.LoginException;
@@ -26,14 +26,14 @@ import java.util.UUID;
 @Component
 public class JwtAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
-    private final UserService userService;
+    private final IUserService userService;
     private final MessageSource messageSource;
     private final UserDetailed innerUser;
 
     @Value("${security.jwt.never}")
     private Long never;
 
-    public JwtAuthenticationProvider(UserService userService, MessageSource messageSource, UserDetailed innerUser) {
+    public JwtAuthenticationProvider(IUserService userService, MessageSource messageSource, UserDetailed innerUser) {
         this.userService = userService;
         this.messageSource = messageSource;
         this.innerUser = innerUser;

@@ -2,8 +2,8 @@ package com.anyservice.web.controller;
 
 import com.anyservice.core.enums.UserRole;
 import com.anyservice.dto.user.UserDetailed;
+import com.anyservice.service.user.IUserService;
 import com.anyservice.service.user.UserHolder;
-import com.anyservice.service.user.UserService;
 import com.anyservice.web.security.JwtUtil;
 import com.anyservice.web.security.dto.InfiniteToken;
 import com.anyservice.web.security.dto.Login;
@@ -19,12 +19,12 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping("/api/v1/user")
 public class SecurityController {
 
-    private final UserService userService;
+    private final IUserService userService;
     private final JwtUtil jwtUtil;
 
     private final UserHolder holder;
 
-    public SecurityController(JwtUtil jwtUtil, UserService userService,
+    public SecurityController(JwtUtil jwtUtil, IUserService userService,
                               UserHolder holder) {
         this.jwtUtil = jwtUtil;
         this.userService = userService;

@@ -2,8 +2,8 @@ package com.anyservice.web.security;
 
 import com.anyservice.core.DateUtils;
 import com.anyservice.dto.user.UserDetailed;
+import com.anyservice.service.user.IUserService;
 import com.anyservice.service.user.UserHolder;
-import com.anyservice.service.user.UserService;
 import com.anyservice.web.security.dto.AuthDetails;
 import com.anyservice.web.security.exceptions.ClaimsExtractionException;
 import com.anyservice.web.security.exceptions.TTLExpirationException;
@@ -33,7 +33,7 @@ import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 @Component
 public class JwtUtil {
-    private final UserService userService;
+    private final IUserService userService;
     private final UserHolder userHolder;
     private final MessageSource messageSource;
 
@@ -52,7 +52,7 @@ public class JwtUtil {
     @Value("${security.inner.key}")
     private String innerKey;
 
-    public JwtUtil(UserService userService, UserHolder userHolder, MessageSource messageSource) {
+    public JwtUtil(IUserService userService, UserHolder userHolder, MessageSource messageSource) {
         this.userService = userService;
         this.userHolder = userHolder;
         this.messageSource = messageSource;

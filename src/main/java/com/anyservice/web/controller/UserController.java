@@ -3,7 +3,7 @@ package com.anyservice.web.controller;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
-import com.anyservice.service.user.UserService;
+import com.anyservice.service.user.IUserService;
 import com.anyservice.web.controller.api.ICRUDController;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.MessageSource;
@@ -26,10 +26,10 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping("/api/v1/user")
 public class UserController implements ICRUDController<UserBrief, UserDetailed, UUID, Long> {
 
-    private final UserService userService;
+    private final IUserService userService;
     private final MessageSource messageSource;
 
-    public UserController(UserService userService, MessageSource messageSource) {
+    public UserController(IUserService userService, MessageSource messageSource) {
         this.userService = userService;
         this.messageSource = messageSource;
     }

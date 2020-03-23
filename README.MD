@@ -1,9 +1,8 @@
 # AnyService marketplace backend
 
 ## Tasks list
-- [x] ...deleted 69 tasks
-- [+] Replace logging calls with lombok annotation @Log4j2
-- [ ] Fix problem with not sending verification messages
+- [x] ...deleted 70 tasks
+- [x] Fix problem with not sending verification messages
 - [ ] Create IUserService interface and replace all calls to UserService by IUserService calls
 - [ ] Add comments to script.sql & test_script.sql
 - [ ] Deploy basic application on Google Cloud

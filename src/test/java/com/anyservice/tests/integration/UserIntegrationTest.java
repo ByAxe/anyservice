@@ -44,6 +44,9 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     @Value("${user.validation.password.length.max}")
     private int passwordMaxLength;
 
+    @Value("${spring.mail.username}")
+    private String mailLogin;
+
     @Override
     public String getInnerHeader() {
         return environment.getProperty("security.inner.header");
@@ -139,11 +142,9 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     }
 
     private Contacts createContacts() {
-        String email = randomString(5, 50) + "@mail.ru";
-
         return Contacts.builder()
                 .phone(random(randomNumber(6, 50), false, true))
-                .email(email)
+                .email(mailLogin)
                 .google(randomString(5, 100))
                 .facebook(randomString(5, 100))
                 .build();

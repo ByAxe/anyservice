@@ -31,18 +31,21 @@ spring:
     template-loader-path: classpath:/templates
     suffix: .ftl
   mail:
-    host: smtp.gmail.com
+    host: smtp.yandex.ru
     port: 587
-    username: anysevicellc@gmail.com
-    password: 7QyEbz6LMQwGyFZz8tKvLTWQ
+    username:
+    password:
     protocol: smtp
     properties:
       mail:
-        debug: ${spring.application.test}
+        debug: false
         smtp:
           auth: true
           starttls:
             enable: true
+          connectiontimeout: 15000
+          timeout: 15000
+          writetimeout: 15000
 
 user:
   validation:

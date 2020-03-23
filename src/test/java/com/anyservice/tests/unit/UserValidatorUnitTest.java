@@ -36,7 +36,10 @@ public class UserValidatorUnitTest extends TestConfig {
      */
     @DataProvider
     public static Object[][] createValidationDataProvider() {
-        String email = randomString(5, 50) + "@mail.ru";
+        String email = "byaxe@ya.ru";
+        boolean isVerified = randomBoolean();
+        boolean isLegalStatusVerified = isVerified;
+        LegalStatus legalStatus = isLegalStatusVerified ? randomEnum(LegalStatus.class) : null;
 
         return new Object[][]{
                 // Empty user - wait for FAIL
@@ -57,9 +60,9 @@ public class UserValidatorUnitTest extends TestConfig {
                                 .build())
                         .userName(null)
                         .description(randomString(0, 1000))
-                        .isLegalStatusVerified(randomBoolean())
-                        .isVerified(randomBoolean())
-                        .legalStatus(randomEnum(LegalStatus.class))
+                        .isVerified(isVerified)
+                        .isLegalStatusVerified(isLegalStatusVerified)
+                        .legalStatus(legalStatus)
                         .password(random(randomNumber(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH)))
                         .build(), FAIL},
 
@@ -79,9 +82,9 @@ public class UserValidatorUnitTest extends TestConfig {
                                 .build())
                         .userName(randomString(1, 50))
                         .description(randomString(0, 1000))
-                        .isLegalStatusVerified(randomBoolean())
-                        .isVerified(randomBoolean())
-                        .legalStatus(randomEnum(LegalStatus.class))
+                        .isVerified(isVerified)
+                        .isLegalStatusVerified(isLegalStatusVerified)
+                        .legalStatus(legalStatus)
                         .password(random(randomNumber(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH),
                                 true, true))
                         .build(), SUCCESS}
@@ -90,6 +93,10 @@ public class UserValidatorUnitTest extends TestConfig {
 
     @DataProvider
     public static Object[][] updateValidationDataProvider() {
+        boolean isVerified = randomBoolean();
+        boolean isLegalStatusVerified = isVerified;
+        LegalStatus legalStatus = isLegalStatusVerified ? randomEnum(LegalStatus.class) : null;
+
         return new Object[][]{
                 // Empty user - wait for FAIL
                 {UserDetailed.builder().build(), FAIL},
@@ -109,9 +116,9 @@ public class UserValidatorUnitTest extends TestConfig {
                                 .build())
                         .userName(randomString(1, 50))
                         .description(randomString(0, 1000))
-                        .isLegalStatusVerified(randomBoolean())
-                        .isVerified(randomBoolean())
-                        .legalStatus(randomEnum(LegalStatus.class))
+                        .isVerified(isVerified)
+                        .isLegalStatusVerified(isLegalStatusVerified)
+                        .legalStatus(legalStatus)
                         .password(random(randomNumber(PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH),
                                 true, true))
                         .build(), SUCCESS}

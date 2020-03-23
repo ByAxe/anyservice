@@ -10,9 +10,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.OffsetDateTime;
 
 @Data
@@ -55,10 +53,13 @@ public class UserEntity extends EntityWithUUID {
     @Column(name = "user_name")
     private String userName;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "country")
+    private Country country;
+
     private String password;
     private String description;
     private String address;
     private String state;
     private String role;
-
 }

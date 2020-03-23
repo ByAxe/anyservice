@@ -9,6 +9,7 @@ import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.Contacts;
+import com.anyservice.entity.user.Country;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.service.user.IUserService;
 import com.anyservice.tests.api.ICRUDTest;
@@ -130,6 +131,16 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .legalStatus(legalStatus)
                 .password(random(randomNumber(passwordMinLength, passwordMaxLength), true, true))
                 .address(randomString(0, 255))
+                .country(createCountry())
+                .build();
+    }
+
+    private Country createCountry() {
+        return Country.builder()
+                .country(randomString(1, 100))
+                .alpha2(randomString(2))
+                .alpha3(randomString(2))
+                .number(randomNumber(1, 100))
                 .build();
     }
 

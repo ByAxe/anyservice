@@ -26,6 +26,7 @@ public class UserEntityToDetailedConverter implements Converter<UserEntity, User
                 .state(source.getState() != null ? UserState.valueOf(source.getState()) : null)
                 .address(source.getAddress())
                 .password(source.getPassword())
+                .country(source.getCountry())
                 .build();
     }
 }

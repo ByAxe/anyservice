@@ -23,6 +23,7 @@ public class UserDetailedToEntityConverter implements Converter<UserDetailed, Us
                 .role(source.getRole() != null ? source.getRole().name() : null)
                 .state(source.getState() != null ? source.getState().name() : null)
                 .address(source.getAddress())
+                .country(source.getCountry())
                 .build();
     }
 }

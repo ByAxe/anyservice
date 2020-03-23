@@ -1,7 +1,6 @@
 package com.anyservice.web.advices;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.hateoas.mediatype.vnderrors.VndErrors;
@@ -15,10 +14,9 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Locale;
 
+@Log4j2
 @ControllerAdvice
 public class GlobalControllerExceptionHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(GlobalControllerExceptionHandler.class);
 
     private final MessageSource messageSource;
 
@@ -59,7 +57,7 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public VndErrors unknownExceptionHandler(Exception ex) {
-        logger.error(messageSource.getMessage("global.controller.exception.handler.unknown.exception.handler", null, Locale.getDefault()), ex);
+        log.error(messageSource.getMessage("global.controller.exception.handler.unknown.exception.handler", null, Locale.getDefault()), ex);
         return new VndErrors("error", ex.getMessage() == null ? messageSource.getMessage("global.controller.exception.handler.unknown.exception.handler", null, LocaleContextHolder.getLocale()) : ex.getMessage());
     }
 

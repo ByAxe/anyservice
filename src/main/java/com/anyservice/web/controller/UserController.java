@@ -5,8 +5,7 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.service.user.UserService;
 import com.anyservice.web.controller.api.ICRUDController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
@@ -22,11 +21,11 @@ import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
+@Log4j2
 @RestController
 @RequestMapping("/api/v1/user")
 public class UserController implements ICRUDController<UserBrief, UserDetailed, UUID, Long> {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
     private final MessageSource messageSource;
 
@@ -42,7 +41,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         try {
             saved = userService.create(dto);
         } catch (Exception e) {
-            logger.info(messageSource.getMessage("user.create",
+            log.info(messageSource.getMessage("user.create",
                     null, LocaleContextHolder.getLocale()));
             throw e;
         }
@@ -66,7 +65,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         try {
             updatedUser = userService.update(dto, uuid, new Date(version));
         } catch (Exception e) {
-            logger.info(messageSource.getMessage("user.update",
+            log.info(messageSource.getMessage("user.update",
                     null, LocaleContextHolder.getLocale()));
             throw e;
         }
@@ -83,7 +82,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         try {
             userDetailed = userService.changePassword(user);
         } catch (Exception e) {
-            logger.info(messageSource.getMessage("user.change.password",
+            log.info(messageSource.getMessage("user.change.password",
                     null, LocaleContextHolder.getLocale()));
             throw e;
         }
@@ -100,7 +99,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         try {
             user = userService.verifyUser(uuid, code);
         } catch (Exception e) {
-            logger.info(messageSource.getMessage("user.verification",
+            log.info(messageSource.getMessage("user.verification",
                     null, LocaleContextHolder.getLocale()));
             throw e;
         }

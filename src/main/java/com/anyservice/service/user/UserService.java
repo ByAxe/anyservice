@@ -10,6 +10,7 @@ import com.anyservice.repository.UserRepository;
 import com.anyservice.service.aop.markers.RemovePasswordFromReturningValue;
 import com.anyservice.service.api.ICustomMailSender;
 import com.anyservice.service.api.IPasswordService;
+import com.anyservice.service.api.IUserService;
 import com.anyservice.service.validators.api.user.IUserValidator;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.WrongPasswordException;
@@ -324,9 +325,9 @@ public class UserService implements IUserService {
 
         long lastUpdateDate = convertOffsetDateTimeToMills(versionOfUserFromDB.getDtUpdate());
 
-        // Compare the versions ofNullable() entities
+        // Compare the versions of entities
         if (version.getTime() != lastUpdateDate) {
-            String message = messageSource.getMessage("user.delete.version",
+            String message = messageSource.getMessage("delete.version",
                     null, LocaleContextHolder.getLocale());
             log.info(message);
             throw new IllegalArgumentException(message);

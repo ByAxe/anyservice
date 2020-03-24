@@ -9,9 +9,9 @@ import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.Contacts;
-import com.anyservice.entity.user.Country;
+import com.anyservice.entity.user.CountryEntity;
 import com.anyservice.entity.user.Initials;
-import com.anyservice.service.user.IUserService;
+import com.anyservice.service.api.IUserService;
 import com.anyservice.tests.api.ICRUDTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,8 +135,8 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .build();
     }
 
-    private Country createCountry() {
-        return Country.builder()
+    private CountryEntity createCountry() {
+        return CountryEntity.builder()
                 .country(randomString(1, 100))
                 .alpha2(randomString(2))
                 .alpha3(randomString(2))

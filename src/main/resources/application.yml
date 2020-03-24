@@ -19,8 +19,9 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
   servlet:
     multipart:
-      max-request-size: 20MB
-      max-file-size: 20MB
+      max-request-size: 10MB
+      max-file-size: 5MB
+      file-size-threshold: 2KB
   zone:
     offset:
       hours: 1
@@ -28,7 +29,7 @@ spring:
     verification:
       seconds: 259200 # 3 days
   freemarker:
-    template-loader-path: classpath:/templates
+    #    template-loader-path: classpath:/templates
     suffix: .ftl
   mail:
     host: smtp.yandex.ru
@@ -46,6 +47,15 @@ spring:
           connectiontimeout: 15000
           timeout: 15000
           writetimeout: 15000
+  minio:
+    url: https://play.min.io
+    bucket: anyservice-test
+    access-key: Q3AM3UQ867SPQQA43P2F
+    secret-key: zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
+    folder:
+      user:
+        photo: /user/photo
+        documents: /user/documents
 
 user:
   validation:
@@ -74,16 +84,3 @@ security:
     never: 1691300640540
     key: LKJIDJFV1aswZ
     header: JX-TOKEN
-
-#s3:
-#  enable: true
-#  type: amazon
-#  defaultStorage: http://192.168.192.12:9000
-#  storages:
-#    "[http://192.168.192.12:9000]":
-#      endpoint: http://192.168.192.12:9000
-#      access_key: KMG3ZZUZ57R2U85VTUJF
-#      secret_key: C3V6aGA1bOJEUbIRhnwwQisKlj1TTSUrhazou0Hq
-#      bucket: anyservice
-#      region: us-east-1
-#      maxUploadSize: 2147483647

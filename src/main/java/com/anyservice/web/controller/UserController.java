@@ -3,7 +3,7 @@ package com.anyservice.web.controller;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
-import com.anyservice.service.user.IUserService;
+import com.anyservice.service.api.IUserService;
 import com.anyservice.web.controller.api.ICRUDController;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.MessageSource;

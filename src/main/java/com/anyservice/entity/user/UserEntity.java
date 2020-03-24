@@ -1,6 +1,7 @@
 package com.anyservice.entity.user;
 
 import com.anyservice.entity.api.EntityWithUUID;
+import com.anyservice.entity.file.FileEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,22 +25,14 @@ import java.time.OffsetDateTime;
 @DynamicInsert
 public class UserEntity extends EntityWithUUID {
 
-    @Column(name = "dt_create")
+    @Column(name = "dt_create", nullable = false)
     private OffsetDateTime dtCreate;
 
-    @Column(name = "dt_update")
+    @Column(name = "dt_update", nullable = false)
     private OffsetDateTime dtUpdate;
 
-    @Column(name = "password_update_date")
+    @Column(name = "password_update_date", nullable = false)
     private OffsetDateTime passwordUpdateDate;
-
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
-    private Contacts contacts;
-
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
-    private Initials initials;
 
     @Column(name = "legal_status")
     private String legalStatus;
@@ -50,16 +43,34 @@ public class UserEntity extends EntityWithUUID {
     @Column(name = "is_legal_status_verified")
     private Boolean isLegalStatusVerified;
 
-    @Column(name = "user_name")
+    @Column(name = "user_name", nullable = false)
     private String userName;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
-    @JoinColumn(name = "country")
-    private Country country;
-
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private String state;
+
+    @Column(nullable = false)
+    private String role;
+
     private String description;
     private String address;
-    private String state;
-    private String role;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private Contacts contacts;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", nullable = false)
+    private Initials initials;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "country")
+    private CountryEntity country;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "photo")
+    private FileEntity photo;
 }

@@ -1,6 +1,6 @@
 package com.anyservice.web.security.filters;
 
-import com.anyservice.service.user.IUserService;
+import com.anyservice.service.api.IUserService;
 import com.anyservice.web.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

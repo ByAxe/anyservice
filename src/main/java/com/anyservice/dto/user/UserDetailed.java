@@ -2,7 +2,7 @@ package com.anyservice.dto.user;
 
 import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.entity.user.Contacts;
-import com.anyservice.entity.user.Country;
+import com.anyservice.entity.user.CountryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,5 +25,5 @@ public class UserDetailed extends UserBrief {
     private boolean isLegalStatusVerified;
     private String password;
     private String address;
-    private Country country;
+    private CountryEntity country;
 }

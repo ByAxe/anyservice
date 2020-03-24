@@ -9,26 +9,21 @@ create schema if not exists anyservice;
 drop table if exists file_description cascade;
 create table file_description
 (
-    uuid      uuid                        NOT NULL primary key,
-    name      character(255)              NOT NULL,
-    md5       character(64),
+    uuid      uuid         not null primary key,
+    name      varchar(255) not null,
     size      bigint,
-    extension character(50),
-    dt_create timestamp without time zone NOT NULL,
-    state     character(50),
-    summary   character(255),
-    storage   jsonb
+    extension varchar(50),
+    dt_create timestamptz  not null,
+    state     varchar(50),
+    type      varchar(50)  not null
 );
 comment on table file_description is 'Таблица хранения метаданных файлов';
 comment on column file_description.uuid is 'Первичный ключ и суррогатный идентификатор файла';
 comment on column file_description.name is 'Описание файла';
-comment on column file_description.md5 is 'Хеш файла по алгоритму MD5';
 comment on column file_description.size is 'Размер файла в байтах';
 comment on column file_description.extension is 'Расширение файла';
 comment on column file_description.dt_create is 'Дата/время создания файла';
 comment on column file_description.state is 'Состояние файла (TEMP или иное)';
-comment on column file_description.summary is 'Сводка об файле';
-comment on column file_description.storage is 'Описание местоположения файла в файловом хранилище';
 
 drop table if exists countries cascade;
 create table if not exists countries
@@ -59,7 +54,7 @@ create table if not exists users
     legal_status             varchar(50),
     is_verified              boolean,
     is_legal_status_verified boolean,
-    profile_photo            uuid references file_description
+    photo uuid references file_description
 );
 
 -- users_files

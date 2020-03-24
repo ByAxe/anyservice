@@ -2,7 +2,7 @@ package com.anyservice.web.controller;
 
 import com.anyservice.core.enums.UserRole;
 import com.anyservice.dto.user.UserDetailed;
-import com.anyservice.service.user.IUserService;
+import com.anyservice.service.api.IUserService;
 import com.anyservice.service.user.UserHolder;
 import com.anyservice.web.security.JwtUtil;
 import com.anyservice.web.security.dto.InfiniteToken;

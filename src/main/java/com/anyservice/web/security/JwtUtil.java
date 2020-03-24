@@ -2,7 +2,7 @@ package com.anyservice.web.security;
 
 import com.anyservice.core.DateUtils;
 import com.anyservice.dto.user.UserDetailed;
-import com.anyservice.service.user.IUserService;
+import com.anyservice.service.api.IUserService;
 import com.anyservice.service.user.UserHolder;
 import com.anyservice.web.security.dto.AuthDetails;
 import com.anyservice.web.security.exceptions.ClaimsExtractionException;

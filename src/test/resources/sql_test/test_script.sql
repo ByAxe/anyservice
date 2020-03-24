@@ -59,7 +59,7 @@ create table if not exists users
     legal_status             varchar(50),
     is_verified              boolean,
     is_legal_status_verified boolean,
-    profile_photo            uuid references file_description
+    photo uuid references file_description
 );
 
 -- users_files

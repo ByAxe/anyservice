@@ -1,10 +1,9 @@
-package com.anyservice.service.user;
+package com.anyservice.service.api;
 
 import com.anyservice.dto.api.APrimary;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
-import com.anyservice.service.api.ICRUDService;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.WrongPasswordException;
 

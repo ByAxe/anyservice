@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @ServletComponentScan
 public class AnyServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AnyServiceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(AnyServiceApplication.class, args);
+    }
 
 }

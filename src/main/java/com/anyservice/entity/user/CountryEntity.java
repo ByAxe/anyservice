@@ -21,7 +21,7 @@ import javax.persistence.Table;
 @Table(name = "countries")
 @DynamicUpdate
 @DynamicInsert
-public class Country extends EntityWithUUID {
+public class CountryEntity extends EntityWithUUID {
     private String country;
     private String alpha2;
     private String alpha3;

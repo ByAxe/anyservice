@@ -22,6 +22,8 @@
         <apache.commons.collections>4.4</apache.commons.collections>
         <jjwt.version>0.9.1</jjwt.version>
         <commons.validator.version>1.6</commons.validator.version>
+        <spring-boot-starter-minio.version>1.5-WithoutNotifications</spring-boot-starter-minio.version>
+        <io.minio.version>6.0.13</io.minio.version>
     </properties>
 
     <dependencies>
@@ -105,6 +107,18 @@
                     <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jlefebure.byaxe</groupId>
+            <artifactId>spring-boot-starter-minio</artifactId>
+            <version>${spring-boot-starter-minio.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>${io.minio.version}</version>
         </dependency>
 
         <dependency>

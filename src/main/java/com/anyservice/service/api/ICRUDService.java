@@ -20,6 +20,4 @@ public interface ICRUDService<BRIEF extends APrimary, DETAILED extends APrimary,
     long count();
 
     void deleteById(ID id, VERSION version);
-
-    void deleteAll();
 }

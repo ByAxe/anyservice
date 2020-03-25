@@ -24,6 +24,7 @@
         <commons.validator.version>1.6</commons.validator.version>
         <spring-boot-starter-minio.version>1.5-WithoutNotifications</spring-boot-starter-minio.version>
         <io.minio.version>6.0.13</io.minio.version>
+        <commons.io.version>2.6</commons.io.version>
     </properties>
 
     <dependencies>
@@ -158,6 +159,14 @@
             <artifactId>commons-validator</artifactId>
             <version>${commons.validator.version}</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.mindrot</groupId>

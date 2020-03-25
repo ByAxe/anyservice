@@ -235,8 +235,4 @@ public class FileService implements IFileService {
         fileRepository.deleteById(uuid);
     }
 
-    @Override
-    public void deleteAll() {
-        throw new UnsupportedOperationException();
-    }
 }

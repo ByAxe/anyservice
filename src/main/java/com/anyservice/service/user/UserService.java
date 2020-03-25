@@ -338,11 +338,6 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void deleteAll() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     @RemovePasswordFromReturningValue
     public UserDetailed findUserForLogin(String userName, String password) {
         UserDetailed user = findByUserNameWithPassword(userName);

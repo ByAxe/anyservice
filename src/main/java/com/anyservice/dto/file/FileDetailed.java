@@ -1,6 +1,7 @@
 package com.anyservice.dto.file;
 
 import com.anyservice.core.enums.FileType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 @NoArgsConstructor
 @SuperBuilder
 public class FileDetailed extends FileBrief {
+    @JsonIgnore
     private InputStream inputStream;
     private FileType fileType;
 }

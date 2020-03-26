@@ -23,7 +23,8 @@ comment on column file_description.name is 'Описание файла';
 comment on column file_description.size is 'Размер файла в байтах';
 comment on column file_description.extension is 'Расширение файла';
 comment on column file_description.dt_create is 'Дата/время создания файла';
-comment on column file_description.state is 'Состояние файла (TEMP или иное)';
+comment on column file_description.state is 'Состояние файла (LOADING или иное)';
+comment on column file_description.type is 'Бизнес-тип файла (фото профиля или иное)';
 
 drop table if exists countries cascade;
 create table if not exists countries
@@ -38,12 +39,12 @@ create table if not exists countries
 drop table if exists users cascade;
 create table if not exists users
 (
-    uuid                     uuid primary key,
-    dt_create                timestamptz not null default now(),
-    dt_update                timestamptz not null default now(),
-    password_update_date     timestamptz not null default now(),
-    user_name                varchar(50) not null unique,
-    initials                 jsonb       not null,
+    uuid                 uuid primary key,
+    dt_create            timestamptz not null default now(),
+    dt_update            timestamptz not null default now(),
+    password_update_date timestamptz not null default now(),
+    user_name            varchar(50) not null unique,
+    initials             jsonb       not null,
     password                 varchar     not null,
     description              text,
     country                  uuid references countries,
@@ -54,7 +55,7 @@ create table if not exists users
     legal_status             varchar(50),
     is_verified              boolean,
     is_legal_status_verified boolean,
-    photo uuid references file_description
+    photo                uuid references file_description
 );
 
 -- users_files

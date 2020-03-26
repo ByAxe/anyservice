@@ -69,7 +69,7 @@ public class FileService implements IFileService {
         }
 
         // Build path for file
-        Path path = getPathForFile(file.getFileType(), uuid);
+        Path path = getPathToFile(file.getFileType(), uuid);
 
         // Upload file on minio
         try {
@@ -95,8 +95,8 @@ public class FileService implements IFileService {
      * @param uuid     file identifier
      * @return path {@link Path} to file
      */
-    private Path getPathForFile(FileType fileType, UUID uuid) {
-        String directory = getDirectoryForFileType(fileType);
+    public Path getPathToFile(FileType fileType, UUID uuid) {
+        String directory = getDirectoryToFileType(fileType);
 
         // Full path to file
         String pathAsString = directory + "/" + uuid;
@@ -111,7 +111,7 @@ public class FileService implements IFileService {
      * @param fileType
      * @return path to directory
      */
-    public String getDirectoryForFileType(FileType fileType) {
+    public String getDirectoryToFileType(FileType fileType) {
         // Find the property name for this file type
         StringBuilder propertyPath = new StringBuilder("spring.minio.folder.");
 
@@ -149,7 +149,7 @@ public class FileService implements IFileService {
         FileDetailed fileDetailed = entityOptional.map(e -> conversionService.convert(e, FileDetailed.class)).get();
 
         // Get path for the file
-        Path path = getPathForFile(fileDetailed.getFileType(), fileDetailed.getUuid());
+        Path path = getPathToFile(fileDetailed.getFileType(), fileDetailed.getUuid());
 
         // Get an actual file from storage
         InputStream inputStream = minioService.get(path);
@@ -226,7 +226,7 @@ public class FileService implements IFileService {
         }
 
         // Get path for the file
-        Path path = getPathForFile(versionOfUserFromDB.getFileType(), versionOfUserFromDB.getUuid());
+        Path path = getPathToFile(versionOfUserFromDB.getFileType(), versionOfUserFromDB.getUuid());
 
         // Delete from storage
         minioService.remove(path);

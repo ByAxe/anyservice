@@ -70,6 +70,17 @@ public class FileController {
     }
 
     @GetMapping("/{uuid}")
+    public ResponseEntity<?> findMetadataById(@PathVariable UUID uuid) {
+        Optional<FileDetailed> fileDetailedOptional = fileService.findById(uuid);
+
+        if (fileDetailedOptional.isPresent()) {
+            return new ResponseEntity<>(fileDetailedOptional.get(), OK);
+        } else {
+            return new ResponseEntity<>(null, NO_CONTENT);
+        }
+    }
+
+    @GetMapping("/{uuid}/load")
     @SneakyThrows
     public void findById(@PathVariable UUID uuid, HttpServletResponse response) {
         // File file by identifier

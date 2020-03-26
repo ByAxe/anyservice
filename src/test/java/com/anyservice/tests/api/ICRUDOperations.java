@@ -3,6 +3,7 @@ package com.anyservice.tests.api;
 import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.api.APrimary;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +28,8 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
 
     // Use whenever expected default successful response of performing operation
     ResultMatcher expectDefault = null;
+
+    Environment getEnvironment();
 
     /**
      * Object through that all the queries is made
@@ -114,14 +117,18 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
      *
      * @return header
      */
-    String getInnerHeader();
+    default String getInnerHeader() {
+        return getEnvironment().getProperty("security.inner.header");
+    }
 
     /**
      * A special key for unlimited possibilities
      *
      * @return key
      */
-    String getInnerKey();
+    default String getInnerKey() {
+        return getEnvironment().getProperty("security.inner.key");
+    }
 
     /**
      * Common operation to get UUID from a raw header "Location"

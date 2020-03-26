@@ -14,10 +14,10 @@ public class FileEntityToDetailedConverter implements Converter<FileEntity, File
                 .uuid(source.getUuid())
                 .dtCreate(source.getDtCreate())
                 .name(source.getName())
-                .extension(FileExtension.valueOf(source.getExtension()))
+                .extension(source.getExtension() != null ? FileExtension.valueOf(source.getExtension()) : null)
                 .size(source.getSize())
-                .state(FileState.valueOf(source.getState()))
-                .fileType(FileType.valueOf(source.getType()))
+                .state(source.getState() != null ? FileState.valueOf(source.getState()) : null)
+                .fileType(source.getType() != null ? FileType.valueOf(source.getType()) : null)
                 .build();
     }
 }

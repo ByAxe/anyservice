@@ -11,21 +11,20 @@ import com.anyservice.dto.user.UserForChangePassword;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.CountryEntity;
 import com.anyservice.entity.user.Initials;
+import com.anyservice.repository.CountryRepository;
 import com.anyservice.service.api.IUserService;
 import com.anyservice.tests.api.ICRUDTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.anyservice.core.RandomValuesGenerator.*;
 import static com.anyservice.core.TestingUtilityClass.PASSWORD_MAX_LENGTH;
@@ -39,6 +38,10 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     @Autowired
     private IUserService userService;
 
+    private final List<CountryEntity> countries = new ArrayList<>();
+    @Autowired
+    private CountryRepository countryRepository;
+
     @Value("${user.validation.password.length.min}")
     private int passwordMinLength;
 
@@ -49,13 +52,8 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     private String mailLogin;
 
     @Override
-    public String getInnerHeader() {
-        return environment.getProperty("security.inner.header");
-    }
-
-    @Override
-    public String getInnerKey() {
-        return environment.getProperty("security.inner.key");
+    public Environment getEnvironment() {
+        return environment;
     }
 
     @Override
@@ -135,13 +133,20 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .build();
     }
 
+    /**
+     * Create fixed amount of countries and return random one
+     *
+     * @return random created country
+     */
     private CountryEntity createCountry() {
-        return CountryEntity.builder()
-                .country(randomString(1, 100))
-                .alpha2(randomString(2))
-                .alpha3(randomString(2))
-                .number(randomNumber(1, 100))
-                .build();
+        if (countries.isEmpty()) {
+            // Put all countries into list
+            countries.addAll(countryRepository.findAll());
+        }
+
+        // Return random one
+        return countries.get(randomNumber(0, countries.size() - 1));
+
     }
 
     private Initials createInitials() {

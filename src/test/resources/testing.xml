@@ -10,6 +10,7 @@
 
             <!--INTEGRATION-->
             <class name="com.anyservice.tests.integration.SecurityIntegrationTest"/>
+            <class name="com.anyservice.tests.integration.FileIntegrationTest"/>
         </classes>
     </test>
 </suite>

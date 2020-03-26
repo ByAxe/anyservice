@@ -48,10 +48,10 @@ spring:
           timeout: 15000
           writetimeout: 15000
   minio:
-    url: https://play.min.io
-    bucket: anyservice-test
-    access-key: Q3AM3UQ867SPQQA43P2F
-    secret-key: zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
+    url: http://127.0.0.1:9000
+    bucket: anyservice
+    access-key: minioadmin
+    secret-key: minioadmin
     folder:
       user:
         photo: user/photo

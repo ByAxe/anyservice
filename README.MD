@@ -6,7 +6,7 @@
 - [ ] Add file storage to application
     - [x] Implement service and controller according to spring-boot-minio guide
     - [x] Test everything with remote minio
-    - [ ] Create local minio docker image
+    - [x] Create local minio docker image
     - [ ] Put findAll&... methods to abstract Service class for all services
     - [ ] Put boilerplate parts (as check for existence) of CUD methods to abstract Service class for all services
     - [ ] Replace SneakyThrows with normal try-catch with appropriate messages

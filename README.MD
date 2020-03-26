@@ -5,7 +5,7 @@
 - [x] Add countries to UserEntity and all the chain
 - [ ] Add file storage to application
     - [x] Implement service and controller according to spring-boot-minio guide
-    - [+] Test everything with remote minio
+    - [x] Test everything with remote minio
     - [ ] Create local minio docker image
     - [ ] Put findAll&... methods to abstract Service class for all services
     - [ ] Put boilerplate parts (as check for existence) of CUD methods to abstract Service class for all services

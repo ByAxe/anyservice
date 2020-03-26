@@ -54,8 +54,8 @@ spring:
     secret-key: zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG
     folder:
       user:
-        photo: /user/photo
-        documents: /user/documents
+        photo: user/photo
+        documents: user/documents
 
 user:
   validation:

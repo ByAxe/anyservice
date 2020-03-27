@@ -1,6 +1,7 @@
 package com.anyservice.dto.user;
 
 import com.anyservice.core.enums.LegalStatus;
+import com.anyservice.dto.file.FileDetailed;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.CountryEntity;
 import lombok.AllArgsConstructor;
@@ -26,4 +27,5 @@ public class UserDetailed extends UserBrief {
     private String password;
     private String address;
     private CountryEntity country;
+    private FileDetailed profilePhoto;
 }

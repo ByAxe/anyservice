@@ -70,7 +70,7 @@ public class UserEntity extends EntityWithUUID {
     @JoinColumn(name = "country")
     private CountryEntity country;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
     @JoinColumn(name = "photo")
     private FileEntity photo;
 }

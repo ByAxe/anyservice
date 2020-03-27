@@ -220,4 +220,14 @@ public class DateUtils {
     public static OffsetDateTime convertLongToOffsetDateTime(Long mills, int zoneOffset) {
         return new Date(mills).toInstant().atOffset(ZoneOffset.ofHours(zoneOffset));
     }
+
+    /**
+     * Convert time from {@link OffsetDateTime} to {@link Date}
+     *
+     * @param offsetDateTime source date format
+     * @return the same date in other format
+     */
+    public static Date convertOffsetDateTimeToDate(OffsetDateTime offsetDateTime) {
+        return new Date(convertOffsetDateTimeToMills(offsetDateTime));
+    }
 }

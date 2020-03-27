@@ -171,6 +171,19 @@ public interface ICRUDOperations<BRIEF extends APrimary, DETAILED extends APrima
     }
 
     /**
+     * Create {@link DETAILED} and return special object, containing necessary data after creation
+     * <p>
+     * An overloaded version of {@link ICRUDOperations#create(APrimary, ResultMatcher)}
+     * With default {@link ResultMatcher}
+     *
+     * @return special object, containing necessary data after creation
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    default DetailedWrapper<DETAILED> create(DETAILED detailed) throws Exception {
+        return create(detailed, expectCreated);
+    }
+
+    /**
      * Creates {@link DETAILED} and return special object, containing necessary data after creation
      *
      * @param detailed that must be created

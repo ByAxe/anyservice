@@ -5,9 +5,17 @@ import com.anyservice.core.enums.UserRole;
 import com.anyservice.core.enums.UserState;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.UserEntity;
+import com.anyservice.service.converters.file.entity_dto.FileEntityToDetailedConverter;
 import org.springframework.core.convert.converter.Converter;
 
 public class UserEntityToDetailedConverter implements Converter<UserEntity, UserDetailed> {
+
+    private final FileEntityToDetailedConverter fileConverter;
+
+    public UserEntityToDetailedConverter(FileEntityToDetailedConverter fileConverter) {
+        this.fileConverter = fileConverter;
+    }
+
     @Override
     public UserDetailed convert(UserEntity source) {
         return UserDetailed.builder()
@@ -27,6 +35,7 @@ public class UserEntityToDetailedConverter implements Converter<UserEntity, User
                 .address(source.getAddress())
                 .password(source.getPassword())
                 .country(source.getCountry())
+                .profilePhoto(source.getPhoto() != null ? fileConverter.convert(source.getPhoto()) : null)
                 .build();
     }
 }

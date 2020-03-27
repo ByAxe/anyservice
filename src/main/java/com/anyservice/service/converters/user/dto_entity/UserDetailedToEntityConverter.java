@@ -2,9 +2,17 @@ package com.anyservice.service.converters.user.dto_entity;
 
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.UserEntity;
+import com.anyservice.service.converters.file.dto_entity.FileDetailedToEntityConverter;
 import org.springframework.core.convert.converter.Converter;
 
 public class UserDetailedToEntityConverter implements Converter<UserDetailed, UserEntity> {
+
+    private final FileDetailedToEntityConverter fileConverter;
+
+    public UserDetailedToEntityConverter(FileDetailedToEntityConverter fileConverter) {
+        this.fileConverter = fileConverter;
+    }
+
     @Override
     public UserEntity convert(UserDetailed source) {
         return UserEntity.builder()
@@ -24,6 +32,7 @@ public class UserDetailedToEntityConverter implements Converter<UserDetailed, Us
                 .state(source.getState() != null ? source.getState().name() : null)
                 .address(source.getAddress())
                 .country(source.getCountry())
+                .photo(source.getProfilePhoto() != null ? fileConverter.convert(source.getProfilePhoto()) : null)
                 .build();
     }
 }

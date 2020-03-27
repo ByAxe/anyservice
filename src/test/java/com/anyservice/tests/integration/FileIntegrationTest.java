@@ -169,7 +169,8 @@ public class FileIntegrationTest extends TestConfig implements ICRUDTest<FileBri
                 .headers(getHeaders())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM))
                 .andExpect(expectOk)
-                .andReturn().getResponse();
+                .andReturn()
+                .getResponse();
 
         // Compare sizes
         Assert.assertEquals(obtainedFile.getContentAsByteArray().length, originalFile.getBytes().length);
@@ -196,6 +197,5 @@ public class FileIntegrationTest extends TestConfig implements ICRUDTest<FileBri
 
         // Expect that nothing was found
         Assert.assertEquals(available, 0);
-
     }
 }

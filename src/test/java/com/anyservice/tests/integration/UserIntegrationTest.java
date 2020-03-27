@@ -2,9 +2,12 @@ package com.anyservice.tests.integration;
 
 import com.anyservice.config.TestConfig;
 import com.anyservice.core.DateUtils;
+import com.anyservice.core.enums.FileExtension;
+import com.anyservice.core.enums.FileType;
 import com.anyservice.core.enums.LegalStatus;
 import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.api.APrimary;
+import com.anyservice.dto.file.FileDetailed;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
@@ -15,10 +18,12 @@ import com.anyservice.repository.CountryRepository;
 import com.anyservice.service.api.IUserService;
 import com.anyservice.tests.api.ICRUDTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.cp.internal.util.Tuple2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.testng.Assert;
@@ -30,6 +35,7 @@ import static com.anyservice.core.RandomValuesGenerator.*;
 import static com.anyservice.core.TestingUtilityClass.PASSWORD_MAX_LENGTH;
 import static com.anyservice.core.TestingUtilityClass.PASSWORD_MIN_LENGTH;
 import static org.apache.commons.lang3.RandomStringUtils.random;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 
@@ -37,6 +43,8 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
 
     @Autowired
     private IUserService userService;
+
+    private String fileBaseUrl = "/api/v1/file";
 
     private final List<CountryEntity> countries = new ArrayList<>();
     @Autowired
@@ -445,12 +453,75 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         assertEqualsDetailed(actualUser, expectedUser);
     }
 
-    //    @Test
-    public void createUserWithProfilePhoto() {
-        // Create profile photo
+    private Tuple2<MockMultipartFile, FileDetailed> createProfilePhoto() throws Exception {
+        return createFile(FileType.PROFILE_PHOTO, FileExtension.jpg);
+    }
 
-        // Add profile photo
+    private Tuple2<MockMultipartFile, FileDetailed> createFile(FileType type, FileExtension extension)
+            throws Exception {
+        // Prepare data for file
+        String fileName = "file";
+        String contentType = "text/plain";
+        byte[] tinyFile = randomString(1, 99).getBytes();
+        String originalFileName = randomString(1, 50) + "." + extension;
+
+        // Build file
+        MockMultipartFile originalFile = new MockMultipartFile(fileName, originalFileName,
+                extension.getContentType(), tinyFile);
+
+        // Build url
+        String url = fileBaseUrl + "/upload/" + type.name();
+
+        // Upload file
+        String contentAsString = mockMvc.perform(multipart(url)
+                .file(originalFile)
+                .headers(getHeaders()))
+                .andExpect(expectCreated)
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Covert returned file metadata to object
+        FileDetailed createdFile = getObjectMapper().readValue(contentAsString,
+                getObjectMapper().getTypeFactory().constructType(FileDetailed.class));
+
+        return Tuple2.of(originalFile, createdFile);
+    }
+
+    @Test
+    public void createAndDeleteUserWithProfilePhoto() throws Exception {
+        // Prepare user
         UserDetailed userDetailed = createNewItem();
 
+        // Create profile photo
+        Tuple2<MockMultipartFile, FileDetailed> photoTuple = createProfilePhoto();
+        MockMultipartFile multipartFile = photoTuple.element1;
+        FileDetailed fileDetailed = photoTuple.element2;
+
+        // Add profile photo
+        userDetailed.setProfilePhoto(fileDetailed);
+
+        // Create user
+        DetailedWrapper<UserDetailed> userWrapper = create(userDetailed);
+        UUID userUuid = userWrapper.getUuid();
+
+        // Select created user
+        UserDetailed selectedUser = select(userUuid);
+
+        // Assert users are equal
+        assertEqualsDetailed(selectedUser, userDetailed);
+
+        // Get selected user's profile photo
+        FileDetailed obtainedMetadata = selectedUser.getProfilePhoto();
+
+        // Compare created file metadata with the source one
+        Assert.assertEquals(obtainedMetadata.getUuid(), fileDetailed.getUuid());
+        Assert.assertEquals(obtainedMetadata.getName(), multipartFile.getOriginalFilename());
+
+        // Get version from selected user
+        long version = DateUtils.convertOffsetDateTimeToMills(selectedUser.getDtCreate());
+
+        // Remove user and file
+        remove(userUuid, version);
     }
 }

@@ -2,6 +2,7 @@ package com.anyservice.service.user;
 
 import com.anyservice.core.enums.UserRole;
 import com.anyservice.core.enums.UserState;
+import com.anyservice.dto.file.FileDetailed;
 import com.anyservice.dto.user.UserBrief;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.dto.user.UserForChangePassword;
@@ -9,6 +10,7 @@ import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
 import com.anyservice.service.aop.markers.RemovePasswordFromReturningValue;
 import com.anyservice.service.api.ICustomMailSender;
+import com.anyservice.service.api.IFileService;
 import com.anyservice.service.api.IPasswordService;
 import com.anyservice.service.api.IUserService;
 import com.anyservice.service.validators.api.user.IUserValidator;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.*;
 
+import static com.anyservice.core.DateUtils.convertOffsetDateTimeToDate;
 import static com.anyservice.core.DateUtils.convertOffsetDateTimeToMills;
 import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
@@ -42,11 +45,12 @@ public class UserService implements IUserService {
     private final MessageSource messageSource;
     private final CacheManager cacheManager;
     private final ICustomMailSender mailSender;
+    private final IFileService fileService;
 
     public UserService(UserRepository userRepository, ConversionService conversionService,
                        IUserValidator userValidator, IPasswordService passwordService,
                        MessageSource messageSource, CacheManager cacheManager,
-                       ICustomMailSender mailSender) {
+                       ICustomMailSender mailSender, IFileService fileService) {
         this.userRepository = userRepository;
         this.conversionService = conversionService;
         this.userValidator = userValidator;
@@ -54,6 +58,7 @@ public class UserService implements IUserService {
         this.messageSource = messageSource;
         this.cacheManager = cacheManager;
         this.mailSender = mailSender;
+        this.fileService = fileService;
     }
 
     @Override
@@ -331,6 +336,13 @@ public class UserService implements IUserService {
                     null, LocaleContextHolder.getLocale());
             log.info(message);
             throw new IllegalArgumentException(message);
+        }
+
+        // Delete file
+        FileDetailed profilePhoto = versionOfUserFromDB.getProfilePhoto();
+        if (profilePhoto != null) {
+            Date fileVersion = convertOffsetDateTimeToDate(profilePhoto.getDtCreate());
+            fileService.deleteById(profilePhoto.getUuid(), fileVersion);
         }
 
         // Delete user

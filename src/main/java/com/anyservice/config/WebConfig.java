@@ -18,16 +18,21 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new UserDetailedToEntityConverter());
+        FileDetailedToEntityConverter fileDetailedToEntityConverter = new FileDetailedToEntityConverter();
+        FileEntityToDetailedConverter fileEntityToDetailedConverter = new FileEntityToDetailedConverter();
+
+        registry.addConverter(new FileBriefToEntityConverter());
+        registry.addConverter(fileDetailedToEntityConverter);
+        registry.addConverter(new FileEntityToBriefConverter());
+        registry.addConverter(fileEntityToDetailedConverter);
+
+        registry.addConverter(new UserDetailedToEntityConverter(fileDetailedToEntityConverter));
         registry.addConverter(new UserBriefToEntityConverter());
-        registry.addConverter(new UserEntityToDetailedConverter());
+        registry.addConverter(new UserEntityToDetailedConverter(fileEntityToDetailedConverter));
         registry.addConverter(new UserEntityToBriefConverter());
 
         registry.addConverter(new InitialsToStringConverter());
 
-        registry.addConverter(new FileBriefToEntityConverter());
-        registry.addConverter(new FileDetailedToEntityConverter());
-        registry.addConverter(new FileEntityToBriefConverter());
-        registry.addConverter(new FileEntityToDetailedConverter());
+
     }
 }

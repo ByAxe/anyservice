@@ -200,6 +200,28 @@ public class FileService implements IFileService {
 
     @Override
     @Transactional
+    public void deleteById(UUID uuid) {
+        // Check if such file exists
+        if (!existsById(uuid)) {
+            String message = messageSource.getMessage("file.not.exists",
+                    null, LocaleContextHolder.getLocale());
+            log.info(message);
+            throw new IllegalArgumentException(message);
+        }
+
+        // We know for sure such file exists
+        FileDetailed versionOfUserFromDB = fileRepository.findById(uuid)
+                .map(e -> conversionService.convert(e, FileDetailed.class))
+                .get();
+
+        long createDate = convertOffsetDateTimeToMills(versionOfUserFromDB.getDtCreate());
+        Date version = new Date(createDate);
+
+        deleteById(uuid, version);
+    }
+
+    @Override
+    @Transactional
     @SneakyThrows
     public void deleteById(UUID uuid, Date version) {
         // Check if such file exists

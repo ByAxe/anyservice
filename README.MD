@@ -3,13 +3,18 @@
 ## Tasks list
 - [x] ...deleted 72 tasks
 - [x] Add countries to UserEntity and all the chain
-- [ ] Add file storage to application
+- [x] Add file storage to application
     - [x] Implement service and controller according to spring-boot-minio guide
     - [x] Test everything with remote minio
     - [x] Create local minio docker image
-    - [ ] Put findAll&... methods to abstract Service class for all services
-    - [ ] Put boilerplate parts (as check for existence) of CUD methods to abstract Service class for all services
-    - [ ] Replace SneakyThrows with normal try-catch with appropriate messages
+    - [x] Implement File validation
+    - [x] Cover file validation with tests
+    
+- [ ] Add file creation to user integration tests
+- [ ] Replace SneakyThrows with normal try-catch with appropriate messages
+- [ ] Cover all methods in FileService with tests
+    
+- [ ] Add "documents" to UserEntity and all the chain
 - [ ] Write documentation for each and every method\class
 - [ ] Replace all the hardcoded messages on one language to MessageSource messages
 - [ ] Add comments to script.sql & test_script.sql

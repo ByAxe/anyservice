@@ -2,6 +2,7 @@ package com.anyservice.tests.integration;
 
 import com.anyservice.config.TestConfig;
 import com.anyservice.core.DateUtils;
+import com.anyservice.core.enums.FileExtension;
 import com.anyservice.core.enums.FileType;
 import com.anyservice.dto.api.APrimary;
 import com.anyservice.dto.file.FileBrief;
@@ -27,7 +28,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+import static com.anyservice.core.RandomValuesGenerator.randomNumber;
 import static com.anyservice.core.RandomValuesGenerator.randomString;
+import static com.anyservice.core.TestingUtilityClass.FAIL;
 import static com.anyservice.core.TestingUtilityClass.SUCCESS;
 import static com.anyservice.core.enums.FileType.DOCUMENT;
 import static com.anyservice.core.enums.FileType.PROFILE_PHOTO;
@@ -43,19 +46,6 @@ public class FileIntegrationTest extends TestConfig implements ICRUDTest<FileBri
 
     @Autowired
     private FileService fileService;
-
-    @DataProvider
-    public static Object[][] uploadGetLoadDeleteDataProvider() {
-        String fileName = "file";
-        String contentType = "text/plain";
-
-        byte[] tinyFile = randomString(1, 99).getBytes();
-
-        return new Object[][]{
-                {new MockMultipartFile(fileName, randomString(1, 50) + "." + randomString(3), contentType, tinyFile), PROFILE_PHOTO, SUCCESS},
-                {new MockMultipartFile(fileName, randomString(1, 50) + "." + randomString(3), contentType, tinyFile), DOCUMENT, SUCCESS},
-        };
-    }
 
     @Override
     public Environment getEnvironment() {
@@ -105,6 +95,29 @@ public class FileIntegrationTest extends TestConfig implements ICRUDTest<FileBri
     @Override
     public String getUrl() {
         return "/file";
+    }
+
+    @DataProvider
+    public static Object[][] uploadGetLoadDeleteDataProvider() {
+        String fileName = "file";
+        String contentType = "text/plain";
+
+        // Get random photo extension
+        List<FileExtension> photoExtensions = FileExtension.getPhotoFormats();
+        FileExtension photoExtension = photoExtensions.get(randomNumber(0, photoExtensions.size() - 1));
+
+        FileExtension documentExtension = FileExtension.pdf;
+
+        byte[] tinyFile = randomString(1, 99).getBytes();
+
+        return new Object[][]{
+                {new MockMultipartFile(fileName, randomString(1, 50) + "." + photoExtension, photoExtension.getContentType(), tinyFile), PROFILE_PHOTO, SUCCESS},
+                {new MockMultipartFile(fileName, randomString(1, 50) + "." + documentExtension, documentExtension.getContentType(), tinyFile), DOCUMENT, SUCCESS},
+
+                // Expect fails because of a wrong file formats for this domain FileTypes
+                {new MockMultipartFile(fileName, randomString(1, 50) + "." + randomString(1, 3), contentType, tinyFile), PROFILE_PHOTO, FAIL},
+                {new MockMultipartFile(fileName, randomString(1, 50) + "." + randomString(1, 3), contentType, tinyFile), DOCUMENT, FAIL},
+        };
     }
 
     @Test(dataProvider = "uploadGetLoadDeleteDataProvider")

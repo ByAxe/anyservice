@@ -1,5 +1,8 @@
 package com.anyservice.core.enums;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum FileExtension {
     $323("text/h323"),
     $3gp("video/3gpp"),
@@ -463,7 +466,6 @@ public enum FileExtension {
 
     private String contentType;
 
-
     FileExtension(String contentType) {
         this.contentType = contentType;
     }
@@ -480,6 +482,20 @@ public enum FileExtension {
             if (extension.name().equalsIgnoreCase(name)) return extension;
         }
         return UNKNOW;
+    }
+
+    public static List<FileExtension> getPhotoFormats() {
+        return Arrays.asList(jpeg, jpg, png);
+    }
+
+    /**
+     * Define, whether passed extension is a photo format
+     *
+     * @param extension extension of a file
+     * @return true if it's an extension of photo format
+     */
+    public static boolean isPhoto(FileExtension extension) {
+        return getPhotoFormats().contains(extension);
     }
 
     public String getContentType() {

@@ -444,4 +444,13 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         // If we got here, search was successful
         assertEqualsDetailed(actualUser, expectedUser);
     }
+
+    //    @Test
+    public void createUserWithProfilePhoto() {
+        // Create profile photo
+
+        // Add profile photo
+        UserDetailed userDetailed = createNewItem();
+
+    }
 }

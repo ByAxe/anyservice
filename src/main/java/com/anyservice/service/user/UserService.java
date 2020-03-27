@@ -338,15 +338,38 @@ public class UserService implements IUserService {
             throw new IllegalArgumentException(message);
         }
 
-        // Delete file
+        // Delete profile photo
         FileDetailed profilePhoto = versionOfUserFromDB.getProfilePhoto();
         if (profilePhoto != null) {
             Date fileVersion = convertOffsetDateTimeToDate(profilePhoto.getDtCreate());
             fileService.deleteById(profilePhoto.getUuid(), fileVersion);
         }
 
+        // Delete all attached documents
+        deleteAllAttachedFiles(versionOfUserFromDB);
+
         // Delete user
         userRepository.deleteById(uuid);
+    }
+
+    private void deleteAllAttachedFiles(UserDetailed user) {
+        // Create overall list for all files
+        List<FileDetailed> allFiles = new ArrayList<>();
+
+        // If there are some documents - add them to main list
+        List<FileDetailed> documents = user.getDocuments();
+        if (documents != null && !documents.isEmpty()) {
+            allFiles.addAll(documents);
+        }
+
+        // If there are some portfolio - add them to main list
+        List<FileDetailed> portfolio = user.getPortfolio();
+        if (portfolio != null && !portfolio.isEmpty()) {
+            allFiles.addAll(portfolio);
+        }
+
+        // Delete all files
+        allFiles.forEach(f -> fileService.deleteById(f.getUuid(), convertOffsetDateTimeToDate(f.getDtCreate())));
     }
 
     @Override

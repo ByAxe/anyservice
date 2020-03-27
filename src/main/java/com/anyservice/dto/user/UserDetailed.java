@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -28,4 +29,6 @@ public class UserDetailed extends UserBrief {
     private String address;
     private CountryEntity country;
     private FileDetailed profilePhoto;
+    private List<FileDetailed> documents;
+    private List<FileDetailed> portfolio;
 }

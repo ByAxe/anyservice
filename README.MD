@@ -1,13 +1,11 @@
 # AnyService marketplace backend
 
 ## Tasks list
-- [x] ...deleted 79 tasks
+- [x] ...deleted 81 tasks
     
-- [ ] Add file creation to user integration tests
-- [ ] Replace SneakyThrows with normal try-catch with appropriate messages
-- [ ] Cover all methods in FileService with tests
-    
-- [ ] Add "documents" to UserEntity and all the chain
+- [x] Add "documents" to UserEntity and all the chain
+- [ ] Cover with tests adding documents to a user
+
 - [ ] Write documentation for each and every method\class
 - [ ] Replace all the hardcoded messages on one language to MessageSource messages
 - [ ] Add comments to script.sql & test_script.sql

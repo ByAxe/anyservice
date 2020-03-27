@@ -50,6 +50,8 @@ public class FileValidator implements IFileValidator {
                                 null, getLocale()));
                     }
                     break;
+                case PORTFOLIO:
+                    break;
             }
         }
 

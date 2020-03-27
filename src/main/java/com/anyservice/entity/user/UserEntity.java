@@ -13,6 +13,11 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.List;
+
+import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.CascadeType.REMOVE;
+import static javax.persistence.FetchType.LAZY;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -66,11 +71,18 @@ public class UserEntity extends EntityWithUUID {
     @Column(columnDefinition = "jsonb", nullable = false)
     private Initials initials;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY, cascade = ALL)
     @JoinColumn(name = "country")
     private CountryEntity country;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
+    @ManyToOne(fetch = LAZY, cascade = REMOVE)
     @JoinColumn(name = "photo")
     private FileEntity photo;
+
+    @ManyToMany(fetch = LAZY, cascade = REMOVE)
+    @JoinTable(name = "users_files",
+            joinColumns = @JoinColumn(name = "user_uuid"),
+            inverseJoinColumns = @JoinColumn(name = "file_uuid")
+    )
+    private List<FileEntity> documents;
 }

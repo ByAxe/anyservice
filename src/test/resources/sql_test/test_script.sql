@@ -39,12 +39,12 @@ create table if not exists countries
 drop table if exists users cascade;
 create table if not exists users
 (
-    uuid                 uuid primary key,
-    dt_create            timestamptz not null default now(),
-    dt_update            timestamptz not null default now(),
-    password_update_date timestamptz not null default now(),
-    user_name            varchar(50) not null unique,
-    initials             jsonb       not null,
+    uuid                     uuid primary key,
+    dt_create                timestamptz not null default now(),
+    dt_update                timestamptz not null default now(),
+    password_update_date     timestamptz not null default now(),
+    user_name                varchar(50) not null unique,
+    initials                 jsonb       not null,
     password                 varchar     not null,
     description              text,
     country                  uuid references countries,
@@ -55,22 +55,19 @@ create table if not exists users
     legal_status             varchar(50),
     is_verified              boolean,
     is_legal_status_verified boolean,
-    photo                uuid references file_description
+    photo                    uuid references file_description
 );
 
 -- users_files
 drop table if exists users_files;
 create table users_files
 (
-    uuid      UUID primary key,
     user_uuid UUID references users (uuid)
         on update cascade
         on delete cascade,
     file_uuid UUID references file_description (uuid)
         on update cascade
-        on delete cascade,
-    dt_create timestamptz,
-    dt_update timestamptz
+        on delete cascade
 );
 
 comment on table users_files is 'Contains data of two "virtual columns": documents_photos and portfolio';

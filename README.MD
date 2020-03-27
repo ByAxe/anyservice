@@ -1,14 +1,7 @@
 # AnyService marketplace backend
 
 ## Tasks list
-- [x] ...deleted 72 tasks
-- [x] Add countries to UserEntity and all the chain
-- [x] Add file storage to application
-    - [x] Implement service and controller according to spring-boot-minio guide
-    - [x] Test everything with remote minio
-    - [x] Create local minio docker image
-    - [x] Implement File validation
-    - [x] Cover file validation with tests
+- [x] ...deleted 79 tasks
     
 - [ ] Add file creation to user integration tests
 - [ ] Replace SneakyThrows with normal try-catch with appropriate messages

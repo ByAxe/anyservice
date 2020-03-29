@@ -122,6 +122,9 @@ public class FileService implements IFileService {
             case DOCUMENT:
                 propertyPath.append("user.documents");
                 break;
+            case PORTFOLIO:
+                propertyPath.append("user.portfolio");
+                break;
         }
 
         // Get the directory from property

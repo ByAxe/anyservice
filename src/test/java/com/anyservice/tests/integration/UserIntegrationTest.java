@@ -2,9 +2,7 @@ package com.anyservice.tests.integration;
 
 import com.anyservice.config.TestConfig;
 import com.anyservice.core.DateUtils;
-import com.anyservice.core.enums.FileExtension;
-import com.anyservice.core.enums.FileType;
-import com.anyservice.core.enums.LegalStatus;
+import com.anyservice.core.FileTestUtils;
 import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.api.APrimary;
 import com.anyservice.dto.file.FileDetailed;
@@ -19,6 +17,7 @@ import com.anyservice.service.api.IUserService;
 import com.anyservice.tests.api.ICRUDTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.cp.internal.util.Tuple2;
+import lombok.Synchronized;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -27,15 +26,20 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
-import static com.anyservice.core.RandomValuesGenerator.*;
+import static com.anyservice.core.RandomValuesGenerator.randomNumber;
+import static com.anyservice.core.RandomValuesGenerator.randomString;
 import static com.anyservice.core.TestingUtilityClass.PASSWORD_MAX_LENGTH;
 import static com.anyservice.core.TestingUtilityClass.PASSWORD_MIN_LENGTH;
+import static java.util.Comparator.comparing;
 import static org.apache.commons.lang3.RandomStringUtils.random;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 
@@ -44,9 +48,10 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
     @Autowired
     private IUserService userService;
 
-    private String fileBaseUrl = "/api/v1/file";
+    protected FileTestUtils fileTestUtils;
 
     private final List<CountryEntity> countries = new ArrayList<>();
+
     @Autowired
     private CountryRepository countryRepository;
 
@@ -105,10 +110,26 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         Assert.assertEquals(actual.getLegalStatus(), expected.getLegalStatus());
     }
 
+    /**
+     * Data provider for {@link this#createAndDeleteUserWithDocumentsAndPortfolioTest(int, int)} test
+     *
+     * @return [documentsAmount, portfolioAmount]
+     */
+    @DataProvider
+    public static Object[][] createAndDeleteUserWithDocumentsAndPortfolioDataProvider() {
+        return new Object[][]{
+                {5, 20},
+                {10, 0},
+                {0, 10},
+                {0, 0},
+                {100, 100}
+        };
+    }
+
     @Override
     public void assertEqualsListBrief(List<UserBrief> actualList, List<UserBrief> expectedList) {
-        actualList.sort(Comparator.comparing(UserBrief::getUserName));
-        expectedList.sort(Comparator.comparing(UserBrief::getUserName));
+        actualList.sort(comparing(UserBrief::getUserName));
+        expectedList.sort(comparing(UserBrief::getUserName));
 
         Assert.assertEquals(actualList.size(), expectedList.size());
 
@@ -119,26 +140,6 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
             Assert.assertEquals(user.getInitials(), otherUser.getInitials());
             Assert.assertEquals(user.getUserName(), otherUser.getUserName());
         }
-    }
-
-    @Override
-    public UserDetailed createNewItem() {
-        boolean isVerified = randomBoolean();
-        boolean isLegalStatusVerified = isVerified;
-        LegalStatus legalStatus = isLegalStatusVerified ? randomEnum(LegalStatus.class) : null;
-
-        return UserDetailed.builder()
-                .initials(createInitials())
-                .contacts(createContacts())
-                .userName(randomString(3, 50))
-                .description(randomString(0, 1000))
-                .isVerified(isVerified)
-                .isLegalStatusVerified(isLegalStatusVerified)
-                .legalStatus(legalStatus)
-                .password(random(randomNumber(passwordMinLength, passwordMaxLength), true, true))
-                .address(randomString(0, 255))
-                .country(createCountry())
-                .build();
     }
 
     /**
@@ -425,6 +426,27 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         changePassword(uuid, password, newPassword, expectOk);
     }
 
+    @Override
+    public UserDetailed createNewItem() {
+        return UserDetailed.builder()
+                .initials(createInitials())
+                .contacts(createContacts())
+                .userName(randomString(3, 50))
+                .description(randomString(0, 1000))
+                .isVerified(false)
+                .isLegalStatusVerified(false)
+                .legalStatus(null)
+                .password(random(randomNumber(passwordMinLength, passwordMaxLength), true, true))
+                .address(randomString(0, 255))
+                .country(createCountry())
+                .build();
+    }
+
+    /**
+     * Create user and  find it via its userName
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     @Test
     public void findUserForLoginTest() throws Exception {
         // Generate password
@@ -453,48 +475,22 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         assertEqualsDetailed(actualUser, expectedUser);
     }
 
-    private Tuple2<MockMultipartFile, FileDetailed> createProfilePhoto() throws Exception {
-        return createFile(FileType.PROFILE_PHOTO, FileExtension.jpg);
-    }
-
-    private Tuple2<MockMultipartFile, FileDetailed> createFile(FileType type, FileExtension extension)
-            throws Exception {
-        // Prepare data for file
-        String fileName = "file";
-        String contentType = "text/plain";
-        byte[] tinyFile = randomString(1, 99).getBytes();
-        String originalFileName = randomString(1, 50) + "." + extension;
-
-        // Build file
-        MockMultipartFile originalFile = new MockMultipartFile(fileName, originalFileName,
-                extension.getContentType(), tinyFile);
-
-        // Build url
-        String url = fileBaseUrl + "/upload/" + type.name();
-
-        // Upload file
-        String contentAsString = mockMvc.perform(multipart(url)
-                .file(originalFile)
-                .headers(getHeaders()))
-                .andExpect(expectCreated)
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        // Covert returned file metadata to object
-        FileDetailed createdFile = getObjectMapper().readValue(contentAsString,
-                getObjectMapper().getTypeFactory().constructType(FileDetailed.class));
-
-        return Tuple2.of(originalFile, createdFile);
-    }
-
+    /**
+     * Create user with profile photo and delete it when made sure that created one are equal to expected,
+     * as well as created profile photo
+     *
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
     @Test
     public void createAndDeleteUserWithProfilePhoto() throws Exception {
+        // Create test utils needed for this test
+        initializeFileTestUtils();
+
         // Prepare user
         UserDetailed userDetailed = createNewItem();
 
         // Create profile photo
-        Tuple2<MockMultipartFile, FileDetailed> photoTuple = createProfilePhoto();
+        Tuple2<MockMultipartFile, FileDetailed> photoTuple = fileTestUtils.createProfilePhoto();
         MockMultipartFile multipartFile = photoTuple.element1;
         FileDetailed fileDetailed = photoTuple.element2;
 
@@ -512,16 +508,101 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
         assertEqualsDetailed(selectedUser, userDetailed);
 
         // Get selected user's profile photo
-        FileDetailed obtainedMetadata = selectedUser.getProfilePhoto();
+        FileDetailed selectedUserProfilePhoto = selectedUser.getProfilePhoto();
 
         // Compare created file metadata with the source one
-        Assert.assertEquals(obtainedMetadata.getUuid(), fileDetailed.getUuid());
-        Assert.assertEquals(obtainedMetadata.getName(), multipartFile.getOriginalFilename());
+        Assert.assertEquals(selectedUserProfilePhoto.getUuid(), fileDetailed.getUuid());
+        Assert.assertEquals(selectedUserProfilePhoto.getName(), multipartFile.getOriginalFilename());
 
         // Get version from selected user
         long version = DateUtils.convertOffsetDateTimeToMills(selectedUser.getDtCreate());
 
         // Remove user and file
         remove(userUuid, version);
+    }
+
+    /**
+     * Create user with given amount of documents and portfolio elements and expect everything was created as expected.
+     * Then, delete all the created documents
+     *
+     * @param documentsAmount amount of documents for user
+     * @param portfolioAmount amount of portfolio elements for user
+     * @throws Exception if something goes wrong - let interpret it as failed test
+     */
+    @Test(dataProvider = "createAndDeleteUserWithDocumentsAndPortfolioDataProvider")
+    public void createAndDeleteUserWithDocumentsAndPortfolioTest(int documentsAmount, int portfolioAmount)
+            throws Exception {
+        // Create test utils needed for this test
+        initializeFileTestUtils();
+
+        // Prepare user
+        UserDetailed userDetailed = createNewItem();
+
+        List<Tuple2<MockMultipartFile, FileDetailed>> documents = null;
+        List<Tuple2<MockMultipartFile, FileDetailed>> portfolio = null;
+
+        // Create bunch of documents and set it to user
+        if (documentsAmount != 0) {
+            documents = fileTestUtils.createDocuments(documentsAmount);
+            List<FileDetailed> documentsList = fileTestUtils.extractFiles(documents, fileTestUtils::extractDTOFiles);
+            userDetailed.setDocuments(documentsList);
+        }
+
+        if (portfolioAmount != 0) {
+            portfolio = fileTestUtils.createPortfolio(portfolioAmount);
+            List<FileDetailed> portfolioList = fileTestUtils.extractFiles(portfolio, fileTestUtils::extractDTOFiles);
+            userDetailed.setPortfolio(portfolioList);
+        }
+
+
+        // Create user
+        DetailedWrapper<UserDetailed> userWrapper = create(userDetailed);
+        UUID userUuid = userWrapper.getUuid();
+
+        // Select created user
+        UserDetailed selectedUser = select(userUuid);
+
+        // Assert users are equal
+        assertEqualsDetailed(selectedUser, userDetailed);
+
+        // Get selected user's documents and portfolio
+        List<FileDetailed> selectedUserDocuments = selectedUser.getDocuments();
+        List<FileDetailed> selectedUserPortfolio = selectedUser.getPortfolio();
+
+        // Assert these lists are not null and not empty
+        if (documentsAmount != 0) {
+            Assert.assertNotNull(selectedUserDocuments);
+
+            if (selectedUserDocuments.isEmpty())
+                throw new AssertionError("Selected user documents list should not be empty!");
+
+            // Assert lists of files are equal
+            fileTestUtils.assertFilesDTOFromListsAreEqual(selectedUserDocuments, documents);
+
+        }
+
+        // Assert these lists are not null and not empty
+        if (portfolioAmount != 0) {
+            Assert.assertNotNull(selectedUserPortfolio);
+
+            if (selectedUserPortfolio.isEmpty())
+                throw new AssertionError("Selected user portfolio list should not be empty!");
+
+            // Assert lists of files are equal
+            fileTestUtils.assertFilesDTOFromListsAreEqual(selectedUserPortfolio, portfolio);
+        }
+
+        // Get version from selected user
+        long version = DateUtils.convertOffsetDateTimeToMills(selectedUser.getDtCreate());
+
+        // Remove user and all its files
+        remove(userUuid, version);
+    }
+
+    @Synchronized
+    private void initializeFileTestUtils() {
+        if (fileTestUtils == null) {
+            fileTestUtils = new FileTestUtils(getMockMvc(), getObjectMapper(), getHeaders());
+        }
     }
 }

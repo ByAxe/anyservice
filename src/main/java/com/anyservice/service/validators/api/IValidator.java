@@ -1,8 +1,23 @@
 package com.anyservice.service.validators.api;
 
+import org.springframework.context.MessageSource;
+
 import java.util.Map;
 
+/**
+ * Root interface for all Validator classes
+ *
+ * @param <E> Type of entity/object that much be validated
+ */
 public interface IValidator<E> {
+
+    /**
+     * Message source for localized messages in errors
+     *
+     * @return Autowired Spring Bean containing localized messages
+     */
+    MessageSource getMessageSource();
+
     /**
      * Validate creation
      *

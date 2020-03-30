@@ -6,8 +6,8 @@ import com.anyservice.dto.DetailedWrapper;
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
-import com.anyservice.web.security.dto.InfiniteToken;
 import com.anyservice.web.security.dto.Login;
+import com.anyservice.web.security.dto.ManualToken;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -228,7 +228,7 @@ public class SecurityIntegrationTest extends UserIntegrationTest {
     }
 
     /**
-     * Create user and try to get infinite token for it
+     * Create user and try to get a manual token for it
      *
      * @throws Exception if something goes wrong - let interpret it as failed test
      */
@@ -263,31 +263,31 @@ public class SecurityIntegrationTest extends UserIntegrationTest {
         userRepository.saveAndFlush(entity);
 
         // Build specific object
-        InfiniteToken infiniteToken = InfiniteToken.builder()
+        ManualToken manualToken = ManualToken.builder()
                 .ttl(never)
                 .userName(userName)
                 .build();
 
         // Convert specific object to string representation
-        String infiniteTokenAsString = getObjectMapper().writeValueAsString(infiniteToken);
+        String manualTokenAsString = getObjectMapper().writeValueAsString(manualToken);
 
         // generate infinite token for it
-        String generatedInfiniteToken = getMockMvc()
-                .perform(post(getExtendedUrl() + "/generate/infinite/token")
+        String generatedManualToken = getMockMvc()
+                .perform(post(getExtendedUrl() + "/generate/manual/token")
                         .headers(getHeaders())
                         .contentType(getContentType())
-                        .content(infiniteTokenAsString))
+                        .content(manualTokenAsString))
                 .andExpect(expectOk)
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
         // Ensure generated token is not null
-        Assert.assertNotNull(generatedInfiniteToken);
+        Assert.assertNotNull(generatedManualToken);
 
-        // Build headers with infinite token
+        // Build headers with manual token
         HttpHeaders headers = new HttpHeaders();
-        headers.add(jwtHeader, generatedInfiniteToken);
+        headers.add(jwtHeader, generatedManualToken);
 
         // Access special method that is allowed only for authenticated users
         UserRole userRole = checkIfAuthenticated(headers);

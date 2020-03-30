@@ -1,5 +1,8 @@
 package com.anyservice.core.enums;
 
+/**
+ * Possible state of a user account
+ */
 public enum UserState {
     ACTIVE("Active", true, true),
     WAITING("Waiting for verification", false, true),

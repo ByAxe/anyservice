@@ -5,8 +5,8 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.service.api.IUserService;
 import com.anyservice.service.user.UserHolder;
 import com.anyservice.web.security.JwtUtil;
-import com.anyservice.web.security.dto.InfiniteToken;
 import com.anyservice.web.security.dto.Login;
+import com.anyservice.web.security.dto.ManualToken;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +45,7 @@ public class SecurityController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<?> logout() {
+    public ResponseEntity<UserDetailed> logout() {
         UserDetailed userDetailed = holder.getUser();
 
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -60,11 +60,17 @@ public class SecurityController {
         return jwtUtil.refreshToken();
     }
 
+    /**
+     * Generate token with manually chosen expiration time
+     *
+     * @param manualToken special DTO {@link ManualToken} for this operation
+     * @return token for this specified user
+     */
     //    @ApiOperation(value = "FOO", hidden = true)
-    @PostMapping("/generate/infinite/token")
-    public String generateInfiniteToken(@RequestBody InfiniteToken infiniteToken) {
-        UserDetailed user = userService.findByUserName(infiniteToken.getUserName());
-        return jwtUtil.generateInfiniteToken(user, infiniteToken.getTtl());
+    @PostMapping("/generate/manual/token")
+    public String generateManualToken(@RequestBody ManualToken manualToken) {
+        UserDetailed user = userService.findByUserName(manualToken.getUserName());
+        return jwtUtil.generateManualToken(user, manualToken.getTtl());
     }
 
     /**

@@ -16,7 +16,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
@@ -34,8 +33,9 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         this.messageSource = messageSource;
     }
 
+    @Override
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody UserDetailed dto) {
+    public ResponseEntity<UserDetailed> create(@RequestBody UserDetailed dto) {
         UserDetailed saved;
 
         try {
@@ -57,9 +57,10 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         return new ResponseEntity<>(saved, httpHeaders, CREATED);
     }
 
+    @Override
     @PutMapping("/{uuid}/version/{version}")
-    public ResponseEntity<?> update(@RequestBody UserDetailed dto,
-                                    @PathVariable UUID uuid, @PathVariable Long version) {
+    public ResponseEntity<UserDetailed> update(@RequestBody UserDetailed dto,
+                                               @PathVariable UUID uuid, @PathVariable Long version) {
         UserDetailed updatedUser;
 
         try {
@@ -75,8 +76,15 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         return new ResponseEntity<>(updatedUser, httpHeaders, OK);
     }
 
+    /**
+     * Change password of a user
+     *
+     * @param user special DTO for changing password operation
+     * @return user with changed password
+     * @throws Exception if something went wrong during verification process
+     */
     @PutMapping("/change/password")
-    public ResponseEntity<?> changePassword(@RequestBody UserForChangePassword user) {
+    public ResponseEntity<UserDetailed> changePassword(@RequestBody UserForChangePassword user) {
         UserDetailed userDetailed;
 
         try {
@@ -92,8 +100,17 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
         return new ResponseEntity<>(userDetailed, httpHeaders, OK);
     }
 
+    /**
+     * Verify given user via verification code
+     *
+     * @param uuid user identifier
+     * @param code user verification code
+     * @return verified user
+     * @throws Exception if something went wrong during verification process
+     */
     @GetMapping("/verification/{uuid}/{code}")
-    public ResponseEntity<?> verifyUser(@NotNull @PathVariable UUID uuid, @NotNull @PathVariable UUID code) {
+    public ResponseEntity<UserDetailed> verifyUser(@NotNull @PathVariable UUID uuid,
+                                                   @NotNull @PathVariable UUID code) {
         UserDetailed user;
 
         try {
@@ -111,14 +128,10 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
 
     @Override
     @GetMapping("/{uuid}")
-    public ResponseEntity<?> findById(@PathVariable UUID uuid) {
-        Optional<UserDetailed> userDTOOptional = userService.findById(uuid);
-
-        if (userDTOOptional.isPresent()) {
-            return new ResponseEntity<>(userDTOOptional.get(), OK);
-        } else {
-            return new ResponseEntity<>(null, NO_CONTENT);
-        }
+    public ResponseEntity<UserDetailed> findById(@PathVariable UUID uuid) {
+        return userService.findById(uuid)
+                .map(userDetailed -> new ResponseEntity<>(userDetailed, OK))
+                .orElseGet(() -> new ResponseEntity<>(null, NO_CONTENT));
     }
 
     @Override
@@ -131,7 +144,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
 
     @Override
     @GetMapping
-    public ResponseEntity<?> findAll() {
+    public ResponseEntity<Iterable<UserBrief>> findAll() {
         Iterable<UserBrief> dtoIterable = userService.findAll();
 
         return new ResponseEntity<>(dtoIterable, OK);
@@ -139,7 +152,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
 
     @Override
     @GetMapping("uuid/list/{uuids}")
-    public ResponseEntity<?> findAllById(@PathVariable List<UUID> uuids) {
+    public ResponseEntity<Iterable<UserBrief>> findAllById(@PathVariable List<UUID> uuids) {
         Iterable<UserBrief> dtoIterable = userService.findAllById(uuids);
 
         return new ResponseEntity<>(dtoIterable, OK);
@@ -156,6 +169,7 @@ public class UserController implements ICRUDController<UserBrief, UserDetailed, 
     @DeleteMapping("/{uuid}/version/{version}")
     public ResponseEntity<?> deleteById(@PathVariable UUID uuid, @PathVariable Long version) {
         userService.deleteById(uuid, new Date(version));
+        new ResponseEntity<>(null, NO_CONTENT);
 
         return new ResponseEntity<>(null, NO_CONTENT);
     }

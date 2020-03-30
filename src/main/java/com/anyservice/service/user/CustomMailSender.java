@@ -72,7 +72,7 @@ public class CustomMailSender implements ICustomMailSender {
             helper.setSubject(messageSource.getMessage("user.verification.email.subject",
                     null, LocaleContextHolder.getLocale()));
 
-            // TODO FEATURE FLAG
+            // To not to spam emails and not to be blocked by mail server during tests
             if (!applicationTest) {
                 // Send message
                 sender.send(message);

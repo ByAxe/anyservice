@@ -6,7 +6,7 @@ import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
 import com.anyservice.service.api.IPasswordService;
-import com.anyservice.service.validators.api.user.IUserValidator;
+import com.anyservice.service.validators.api.IUserValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;

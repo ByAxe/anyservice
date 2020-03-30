@@ -6,7 +6,7 @@ import com.anyservice.entity.user.Initials;
 import com.anyservice.entity.user.UserEntity;
 import com.anyservice.repository.UserRepository;
 import com.anyservice.service.user.PasswordService;
-import com.anyservice.service.validators.api.user.AUserValidator;
+import com.anyservice.service.validators.api.IUserValidator;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
@@ -19,7 +19,7 @@ import java.util.UUID;
 import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 @Service
-public class UserValidator extends AUserValidator<UserDetailed> {
+public class UserValidator implements IUserValidator {
     private final UserRepository userRepository;
     private final MessageSource messageSource;
     private final PasswordService passwordService;
@@ -293,6 +293,36 @@ public class UserValidator extends AUserValidator<UserDetailed> {
         } else {
             errors.put("initials", getMessageSource().getMessage("user.initials.not.exist",
                     null, getLocale()));
+        }
+
+        return errors;
+    }
+
+    @Override
+    public Map<String, Object> validateLettersOnlyField(String field, String fieldName) {
+        Map<String, Object> errors = new HashMap<>();
+
+        // Check whether filedName is present
+        if (fieldName == null || fieldName.isEmpty()) {
+            errors.put("fieldName", getMessageSource().getMessage("user.letter.only.field.fieldname",
+                    new Object[]{"fieldName"}, getLocale()));
+            return errors;
+        }
+
+        // Check whether field is present
+        if (field == null || field.isEmpty()) {
+            errors.put(fieldName, getMessageSource().getMessage("user.letter.only.field.empty",
+                    new Object[]{fieldName}, getLocale()));
+            return errors;
+        }
+
+        // Ensure that the field contains only letters
+        for (char ch : field.toCharArray()) {
+            if (!Character.isLetter(ch)) {
+                errors.put(fieldName, getMessageSource().getMessage("user.letter.only.field",
+                        new Object[]{fieldName}, getLocale()));
+                return errors;
+            }
         }
 
         return errors;

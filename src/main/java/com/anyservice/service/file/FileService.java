@@ -6,7 +6,7 @@ import com.anyservice.dto.file.FileDetailed;
 import com.anyservice.entity.file.FileEntity;
 import com.anyservice.repository.FileRepository;
 import com.anyservice.service.api.IFileService;
-import com.anyservice.service.validators.api.file.IFileValidator;
+import com.anyservice.service.validators.api.IFileValidator;
 import com.jlefebure.spring.boot.minio.MinioException;
 import com.jlefebure.spring.boot.minio.MinioService;
 import lombok.SneakyThrows;

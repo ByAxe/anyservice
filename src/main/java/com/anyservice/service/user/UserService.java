@@ -13,7 +13,7 @@ import com.anyservice.service.api.ICustomMailSender;
 import com.anyservice.service.api.IFileService;
 import com.anyservice.service.api.IPasswordService;
 import com.anyservice.service.api.IUserService;
-import com.anyservice.service.validators.api.user.IUserValidator;
+import com.anyservice.service.validators.api.IUserValidator;
 import com.anyservice.web.security.exceptions.UserNotFoundException;
 import com.anyservice.web.security.exceptions.WrongPasswordException;
 import lombok.extern.log4j.Log4j2;
@@ -128,7 +128,10 @@ public class UserService implements IUserService {
 
         entity.setPasswordUpdateDate(now);
 
+        // By default, everyone is a user
         entity.setRole(UserRole.ROLE_USER.name());
+
+        // At the beginning, all non verified (yet) users obtain status WAITING
         entity.setState(UserState.WAITING.name());
 
         entity.setIsVerified(false);
@@ -163,9 +166,11 @@ public class UserService implements IUserService {
         user.setUuid(versionOfUserFromDB.getUuid());
         user.setDtCreate(versionOfUserFromDB.getDtCreate());
         user.setPasswordUpdateDate(versionOfUserFromDB.getPasswordUpdateDate());
+        user.setDtUpdate(OffsetDateTime.now());
+
+        // For example - role and state of user should not be updated with this method
         user.setRole(versionOfUserFromDB.getRole());
         user.setState(versionOfUserFromDB.getState());
-        user.setDtUpdate(OffsetDateTime.now());
 
         // Validate user
         Map<String, Object> errors = userValidator.validateUpdates(user);
@@ -255,6 +260,12 @@ public class UserService implements IUserService {
         return conversionService.convert(savedEntity, UserDetailed.class);
     }
 
+    /**
+     * Find user without password
+     *
+     * @param uuid user identifier
+     * @return {@link UserDetailed} without password
+     */
     @Override
     public Optional<UserDetailed> findById(UUID uuid) {
         Optional<UserDetailed> userDetailedWithPassword = findByIdWithPassword(uuid);
@@ -262,6 +273,16 @@ public class UserService implements IUserService {
         return userDetailedWithPassword;
     }
 
+    /**
+     * Finds user by given identifier with password
+     *
+     * <p>
+     * ONLY FOR INTERNAL USAGE
+     * <p>
+     *
+     * @param id user identifier
+     * @return {@link UserDetailed} with password
+     */
     private Optional<UserDetailed> findByIdWithPassword(UUID id) {
         Optional<UserEntity> optionalUserEntity = userRepository.findById(id);
 
@@ -352,6 +373,11 @@ public class UserService implements IUserService {
         userRepository.deleteById(uuid);
     }
 
+    /**
+     * Delete all user files
+     *
+     * @param user user with/without files
+     */
     private void deleteAllAttachedFiles(UserDetailed user) {
         // Create overall list for all files
         List<FileDetailed> allFiles = new ArrayList<>();
@@ -375,8 +401,11 @@ public class UserService implements IUserService {
     @Override
     @RemovePasswordFromReturningValue
     public UserDetailed findUserForLogin(String userName, String password) {
+
+        // Find user with password
         UserDetailed user = findByUserNameWithPassword(userName);
 
+        // Check if it exists
         if (user == null) {
             throw new UserNotFoundException(messageSource.getMessage("security.controller.login.user.not.found",
                     null, LocaleContextHolder.getLocale()));
@@ -423,12 +452,15 @@ public class UserService implements IUserService {
                     null, LocaleContextHolder.getLocale()));
         }
 
+        // Check if user is already verified
         if (state == UserState.ACTIVE) {
             throw new IllegalArgumentException(messageSource.getMessage("security.user.already.active",
                     null, LocaleContextHolder.getLocale()));
         }
 
+        // Get map with cached verification codes
         Cache verificationCodeMap = cacheManager.getCache("verificationCodeMap");
+
         // Get expected verification code from a cache
         UUID expectedVerificationCode = verificationCodeMap.get(uuid, UUID.class);
 

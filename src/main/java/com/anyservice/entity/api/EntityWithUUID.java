@@ -11,6 +11,11 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import java.util.UUID;
 
+/**
+ * Root class for all entities in application
+ * <p>
+ * Contains identifier {@link UUID} AND special type for conversion jsonb into needed class object
+ */
 @MappedSuperclass
 @Data
 @AllArgsConstructor

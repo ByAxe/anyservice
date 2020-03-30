@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Special class that stores body of data in JWT, wrapping up standard body of {@link Claims}
+ */
 @Data
 @Builder
 @NoArgsConstructor

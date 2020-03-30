@@ -6,6 +6,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+/**
+ * Singleton that holds a request bean
+ */
 @Component
 public class UserHolder implements ApplicationContextAware {
     private ApplicationContext applicationContext;

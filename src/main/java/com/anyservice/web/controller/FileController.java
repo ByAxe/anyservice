@@ -5,12 +5,12 @@ import com.anyservice.core.enums.FileType;
 import com.anyservice.dto.file.FileBrief;
 import com.anyservice.dto.file.FileDetailed;
 import com.anyservice.service.api.IFileService;
+import com.anyservice.web.controller.api.ICRUDController;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,19 +30,17 @@ import static org.springframework.http.HttpStatus.*;
 @Log4j2
 @RestController
 @RequestMapping("/api/v1/file")
-public class FileController {
-    private final MessageSource messageSource;
+public class FileController implements ICRUDController<FileBrief, FileDetailed, UUID, Long> {
     private final IFileService fileService;
 
-    public FileController(MessageSource messageSource, IFileService fileService) {
-        this.messageSource = messageSource;
+    public FileController(IFileService fileService) {
         this.fileService = fileService;
     }
 
     @SneakyThrows
     @PostMapping("/upload/{type}")
-    public ResponseEntity<?> create(@PathVariable FileType type,
-                                    @NonNull @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<FileDetailed> create(@PathVariable FileType type,
+                                               @NonNull @RequestParam("file") MultipartFile file) {
 
         // Build file object
         FileDetailed detailed = FileDetailed.builder()
@@ -69,17 +67,26 @@ public class FileController {
         return new ResponseEntity<>(saved, httpHeaders, CREATED);
     }
 
+    /**
+     * Find File metadata, without actual file content
+     *
+     * @param uuid file identifier
+     * @return {@link FileDetailed} without actual file content
+     */
+    @Override
     @GetMapping("/{uuid}")
-    public ResponseEntity<?> findMetadataById(@PathVariable UUID uuid) {
-        Optional<FileDetailed> fileDetailedOptional = fileService.findById(uuid);
-
-        if (fileDetailedOptional.isPresent()) {
-            return new ResponseEntity<>(fileDetailedOptional.get(), OK);
-        } else {
-            return new ResponseEntity<>(null, NO_CONTENT);
-        }
+    public ResponseEntity<FileDetailed> findById(@PathVariable UUID uuid) {
+        return fileService.findById(uuid)
+                .map(fileDetailed -> new ResponseEntity<>(fileDetailed, OK))
+                .orElseGet(() -> new ResponseEntity<>(null, NO_CONTENT));
     }
 
+    /**
+     * Find file and its content by its identifier
+     *
+     * @param uuid     file identifier
+     * @param response {@link HttpServletResponse} through that file content will be passed to the client
+     */
     @GetMapping("/{uuid}/load")
     @SneakyThrows
     public void findById(@PathVariable UUID uuid, HttpServletResponse response) {
@@ -115,6 +122,7 @@ public class FileController {
         response.flushBuffer();
     }
 
+    @Override
     @GetMapping("/exists/{uuid}")
     public ResponseEntity<Boolean> existsById(@PathVariable UUID uuid) {
         boolean exists = fileService.existsById(uuid);
@@ -122,30 +130,44 @@ public class FileController {
         return new ResponseEntity<>(exists, OK);
     }
 
+    @Override
     @GetMapping
-    public ResponseEntity<?> findAll() {
+    public ResponseEntity<Iterable<FileBrief>> findAll() {
         Iterable<FileBrief> dtoIterable = fileService.findAll();
 
         return new ResponseEntity<>(dtoIterable, OK);
     }
 
+    @Override
     @GetMapping("uuid/list/{uuids}")
-    public ResponseEntity<?> findAllById(@PathVariable List<UUID> uuids) {
+    public ResponseEntity<Iterable<FileBrief>> findAllById(@PathVariable List<UUID> uuids) {
         Iterable<FileBrief> dtoIterable = fileService.findAllById(uuids);
 
         return new ResponseEntity<>(dtoIterable, OK);
     }
 
+    @Override
     @GetMapping("/count")
     public ResponseEntity<Long> count() {
         long count = fileService.count();
         return new ResponseEntity<>(count, OK);
     }
 
+    @Override
     @DeleteMapping("/{uuid}/version/{version}")
     public ResponseEntity<?> deleteById(@PathVariable UUID uuid, @PathVariable Long version) {
         fileService.deleteById(uuid, new Date(version));
 
         return new ResponseEntity<>(null, NO_CONTENT);
+    }
+
+    @Override
+    public ResponseEntity<FileDetailed> create(FileDetailed dto) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ResponseEntity<FileDetailed> update(FileDetailed dto, UUID uuid, Long aLong) {
+        throw new UnsupportedOperationException();
     }
 }

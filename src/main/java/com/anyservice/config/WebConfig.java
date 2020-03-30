@@ -16,6 +16,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    /**
+     * Registration of converters those implement {@link org.springframework.core.convert.converter.Converter}
+     * To be able to use them through {@link org.springframework.core.convert.ConversionService}
+     *
+     * @param registry registry of all converters
+     */
     @Override
     public void addFormatters(FormatterRegistry registry) {
         FileDetailedToEntityConverter fileDetailedToEntityConverter = new FileDetailedToEntityConverter();

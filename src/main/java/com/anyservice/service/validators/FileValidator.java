@@ -2,7 +2,7 @@ package com.anyservice.service.validators;
 
 import com.anyservice.core.enums.FileExtension;
 import com.anyservice.dto.file.FileDetailed;
-import com.anyservice.service.validators.api.file.IFileValidator;
+import com.anyservice.service.validators.api.IFileValidator;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +24,11 @@ public class FileValidator implements IFileValidator {
     }
 
     @Override
+    public MessageSource getMessageSource() {
+        return messageSource;
+    }
+
+    @Override
     public Map<String, Object> validateCreation(FileDetailed file) {
         Map<String, Object> errors = new HashMap<>();
 
@@ -31,7 +36,7 @@ public class FileValidator implements IFileValidator {
 
         // File type must present
         if (file.getFileType() == null) {
-            errors.put("file.filetype", messageSource.getMessage("file.filetype.empty",
+            errors.put("file.filetype", getMessageSource().getMessage("file.filetype.empty",
                     null, getLocale()));
         } else {
             boolean isPhoto = isPhoto(extension);
@@ -40,13 +45,13 @@ public class FileValidator implements IFileValidator {
             switch (file.getFileType()) {
                 case PROFILE_PHOTO:
                     if (!isPhoto) {
-                        errors.put("file.extension", messageSource.getMessage("file.extension.photo",
+                        errors.put("file.extension", getMessageSource().getMessage("file.extension.photo",
                                 null, getLocale()));
                     }
                     break;
                 case DOCUMENT:
                     if (!isPhoto && pdf != extension) {
-                        errors.put("file.extension", messageSource.getMessage("file.extension.document",
+                        errors.put("file.extension", getMessageSource().getMessage("file.extension.document",
                                 null, getLocale()));
                     }
                     break;
@@ -57,20 +62,20 @@ public class FileValidator implements IFileValidator {
 
         // Name must present
         if (isEmpty(file.getName())) {
-            errors.put("file.name", messageSource.getMessage("file.name.empty",
+            errors.put("file.name", getMessageSource().getMessage("file.name.empty",
                     null, getLocale()));
         }
 
         // Size must present
         Long size = file.getSize();
         if (size == null || size == 0) {
-            errors.put("file.size", messageSource.getMessage("file.size.empty",
+            errors.put("file.size", getMessageSource().getMessage("file.size.empty",
                     null, getLocale()));
         }
 
         // Extension must present
         if (extension == null) {
-            errors.put("file.extension", messageSource.getMessage("file.extension.empty",
+            errors.put("file.extension", getMessageSource().getMessage("file.extension.empty",
                     null, getLocale()));
         }
 

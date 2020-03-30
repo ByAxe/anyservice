@@ -8,6 +8,10 @@ import lombok.experimental.SuperBuilder;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * Root class for all DTO in application
+ * Contains necessary fields for all DTOs
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

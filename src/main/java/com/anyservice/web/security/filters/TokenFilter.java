@@ -39,7 +39,8 @@ public class TokenFilter extends GenericFilterBean {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
         final HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletRequest wrapper = httpRequest;
         if (httpRequest.getParameterMap().containsKey(paramTokenName)) {

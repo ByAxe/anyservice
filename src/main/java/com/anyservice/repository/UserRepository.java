@@ -8,5 +8,12 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, UUID> {
+
+    /**
+     * Find first user via given user name
+     *
+     * @param userName given name of a user
+     * @return found user via given user name
+     */
     UserEntity findFirstByUserName(String userName);
 }

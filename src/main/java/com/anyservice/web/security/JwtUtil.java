@@ -152,13 +152,13 @@ public class JwtUtil {
 
 
     /**
-     * Token creation for specified user
+     * Token creation for specified user with manual expiration time
      *
      * @param user for which token generated
      * @param ttl  token life period
      * @return new token
      */
-    public String generateInfiniteToken(UserDetailed user, Long ttl) {
+    public String generateManualToken(UserDetailed user, Long ttl) {
         return generateToken(user, ttl);
     }
 

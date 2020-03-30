@@ -5,11 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Token with manually chosen expiration time for given user
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class InfiniteToken {
+public class ManualToken {
     private Long ttl;
     private String userName;
 }

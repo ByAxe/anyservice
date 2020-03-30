@@ -39,6 +39,7 @@ public class HazelcastConfig extends CachingConfigurerSupport {
                                         .setPolicy(PassThroughMergePolicy.class.getName()))
                                 .setTimeToLiveSeconds(uuidLive))
                 .addMapConfig(
+                        // Map for keeping the verification codes
                         new MapConfig()
                                 .setName("verificationCodeMap")
                                 .setBackupCount(2)

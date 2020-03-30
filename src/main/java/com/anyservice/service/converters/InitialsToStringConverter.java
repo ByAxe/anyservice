@@ -6,6 +6,12 @@ import org.springframework.core.convert.converter.Converter;
 
 public class InitialsToStringConverter implements Converter<Initials, String> {
 
+    /**
+     * Converts given {@link Initials} into valid and proper textual representation
+     *
+     * @param source {@link Initials} of a {@link com.anyservice.entity.user.UserEntity}
+     * @return textual representation of {@link com.anyservice.entity.user.UserEntity} initials
+     */
     @Override
     public String convert(Initials source) {
         StringBuilder builder = new StringBuilder();

@@ -1,9 +1,8 @@
-package com.anyservice.service.validators.api.user;
+package com.anyservice.service.validators.api;
 
 import com.anyservice.dto.user.UserDetailed;
 import com.anyservice.entity.user.Contacts;
 import com.anyservice.entity.user.Initials;
-import com.anyservice.service.validators.api.IValidator;
 
 import java.util.Map;
 import java.util.UUID;

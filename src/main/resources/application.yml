@@ -57,6 +57,9 @@ spring:
         photo: user/photo
         documents: user/documents
         portfolio: user/portfolio
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
 
 user:
   validation:

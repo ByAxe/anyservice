@@ -42,10 +42,11 @@ public class UserEntityToDetailedConverter implements Converter<UserEntity, User
                 .initials(source.getInitials())
                 .role(source.getRole() != null ? UserRole.valueOf(source.getRole()) : null)
                 .state(source.getState() != null ? UserState.valueOf(source.getState()) : null)
-                .address(source.getAddress())
+                .addresses(source.getAddresses())
                 .password(source.getPassword())
-                .country(source.getCountry())
+                .defaultCountry(source.getCountry())
                 .profilePhoto(source.getPhoto() != null ? fileConverter.convert(source.getPhoto()) : null)
+                .listOfCountriesWhereServicesProvided(source.getCountries())
                 .build();
 
         // Get all the files from source

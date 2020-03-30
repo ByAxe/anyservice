@@ -38,7 +38,5 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addConverter(new UserEntityToBriefConverter());
 
         registry.addConverter(new InitialsToStringConverter());
-
-
     }
 }

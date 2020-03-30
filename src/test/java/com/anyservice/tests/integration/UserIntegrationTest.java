@@ -29,10 +29,7 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.anyservice.core.RandomValuesGenerator.randomNumber;
 import static com.anyservice.core.RandomValuesGenerator.randomString;
@@ -147,6 +144,7 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
      *
      * @return random created country
      */
+    @Synchronized
     private CountryEntity createCountry() {
         if (countries.isEmpty()) {
             // Put all countries into list
@@ -158,6 +156,40 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
 
     }
 
+    /**
+     * Create countries where services is available
+     *
+     * @return randomly created services countries list
+     */
+    @Synchronized
+    private List<CountryEntity> createServiceCountries() {
+        if (countries.isEmpty()) {
+            // Put all countries into list
+            countries.addAll(countryRepository.findAll());
+        }
+
+        // Use Set to avoid duplicates
+        Set<CountryEntity> countriesSet = new HashSet<>();
+
+        // Get random amount of countries to generate
+        int randomAmountOfAvailableCountries = randomNumber(0, countries.size() - 1);
+
+        // Add to set this random amount of countries
+        for (int i = 0; i < randomAmountOfAvailableCountries; i++) {
+            CountryEntity country = countries.get(randomNumber(0, countries.size() - 1));
+
+            countriesSet.add(country);
+        }
+
+        // Return list without duplicating countries
+        return new ArrayList<>(countriesSet);
+    }
+
+    /**
+     * Generate random initials of a user
+     *
+     * @return random Initials
+     */
     private Initials createInitials() {
         return Initials.builder()
                 .firstName(random(randomNumber(2, 100), true, false))
@@ -166,6 +198,11 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .build();
     }
 
+    /**
+     * Generate random contacts for a user
+     *
+     * @return random Contacts
+     */
     private Contacts createContacts() {
         return Contacts.builder()
                 .phone(random(randomNumber(6, 50), false, true))
@@ -173,6 +210,32 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .google(randomString(5, 100))
                 .facebook(randomString(5, 100))
                 .build();
+    }
+
+    /**
+     * Generate random number of random addresses
+     *
+     * @return map of random addresses
+     */
+    private Map<String, String> createAddresses() {
+
+        // Generate random amount of address
+        int addressesAmount = randomNumber(0, 10);
+
+        // No addresses means null
+        if (addressesAmount == 0) return null;
+
+        Map<String, String> addresses = new HashMap<>();
+
+        // Generate random addresses
+        for (int i = 0; i < addressesAmount; i++) {
+            String randomAddressName = randomString(1, 50);
+            String randomAddressLocation = randomString(1, 100);
+
+            addresses.put(randomAddressName, randomAddressLocation);
+        }
+
+        return addresses;
     }
 
     @Test
@@ -437,8 +500,9 @@ public class UserIntegrationTest extends TestConfig implements ICRUDTest<UserBri
                 .isLegalStatusVerified(false)
                 .legalStatus(null)
                 .password(random(randomNumber(passwordMinLength, passwordMaxLength), true, true))
-                .address(randomString(0, 255))
-                .country(createCountry())
+                .addresses(createAddresses())
+                .defaultCountry(createCountry())
+                .listOfCountriesWhereServicesProvided(createServiceCountries())
                 .build();
     }
 

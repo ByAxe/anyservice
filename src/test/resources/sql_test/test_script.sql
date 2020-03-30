@@ -5,6 +5,8 @@ create database anyservice_test_db;
 drop schema if exists anyservice_test cascade;
 create schema if not exists anyservice_test;
 
+comment on schema anyservice_test is 'Main schema for Testing AnyService';
+
 -- FILE_DESCRIPTION
 drop table if exists file_description cascade;
 create table file_description
@@ -13,18 +15,18 @@ create table file_description
     name      varchar(255) not null,
     size      bigint,
     extension varchar(50),
-    dt_create timestamptz  not null,
     state     varchar(50),
-    type      varchar(50)  not null
+    type      varchar(50)  not null,
+    dt_create timestamptz  not null
 );
-comment on table file_description is 'Таблица хранения метаданных файлов';
-comment on column file_description.uuid is 'Первичный ключ и суррогатный идентификатор файла';
-comment on column file_description.name is 'Описание файла';
-comment on column file_description.size is 'Размер файла в байтах';
-comment on column file_description.extension is 'Расширение файла';
-comment on column file_description.dt_create is 'Дата/время создания файла';
-comment on column file_description.state is 'Состояние файла (LOADING или иное)';
-comment on column file_description.type is 'Бизнес-тип файла (фото профиля или иное)';
+comment on table file_description is 'Storage of files metadata';
+comment on column file_description.uuid is 'Primary key of a file';
+comment on column file_description.name is 'Original file name';
+comment on column file_description.size is 'Size in bytes';
+comment on column file_description.extension is 'File extension';
+comment on column file_description.state is 'File state (LOADING or other)';
+comment on column file_description.type is 'Domain, that files belongs to (profile photo etc.)';
+comment on column file_description.dt_create is 'Date and time of file creation and also works as Version of a file';
 
 drop table if exists countries cascade;
 create table if not exists countries
@@ -35,6 +37,13 @@ create table if not exists countries
     alpha3  char(3)      not null unique,
     number  smallint     not null unique
 );
+
+comment on table countries is 'Dictionary of allowed countries';
+comment on column countries.uuid is 'Primary key of a country';
+comment on column countries.country is 'Country name';
+comment on column countries.alpha2 is 'Two letter code of a country';
+comment on column countries.alpha2 is 'Three letter code of a country';
+comment on column countries.number is 'Unique number of a country';
 
 drop table if exists users cascade;
 create table if not exists users
@@ -48,7 +57,7 @@ create table if not exists users
     password                 varchar     not null,
     description              text,
     country                  uuid references countries,
-    address                  varchar,
+    addresses                jsonb,
     state                    varchar(50) not null,
     role                     varchar(50) not null,
     contacts                 jsonb,
@@ -58,20 +67,54 @@ create table if not exists users
     photo                    uuid references file_description
 );
 
+comment on table users is 'All users of an application';
+comment on column users.uuid is 'Primary key of a user';
+comment on column users.dt_create is 'Date create of a user';
+comment on column users.dt_update is 'Last date update of a user and also works as Version of a user';
+comment on column users.password_update_date is 'Password update date';
+comment on column users.user_name is 'User name of a user';
+comment on column users.initials is 'First, second and last name of a user';
+comment on column users.password is 'User password hash';
+comment on column users.description is 'Description of a user';
+comment on column users.country is 'Country where user registered in';
+comment on column users.addresses is 'User addresses, listed as [title:address] pairs';
+comment on column users.state is 'State of a user (ACTIVE, BLOCKED etc.)';
+comment on column users.role is 'Role of user (USER, ADMIN etc.)';
+comment on column users.contacts is 'All contacts of a user';
+comment on column users.is_verified is 'Is user verified in application?';
+comment on column users.legal_status is 'User legal status (LLC etc.)';
+comment on column users.is_legal_status_verified is 'Is user status verified in application?';
+comment on column users.photo is 'User profile photo';
+
+-- users_countries
+drop table if exists users_countries;
+create table users_countries
+(
+    user_uuid    uuid references users (uuid)
+        on update cascade
+        on delete cascade,
+    country_uuid uuid references countries (uuid)
+        on update cascade
+        on delete cascade,
+    primary key (user_uuid, country_uuid)
+);
+
+comment on table users_countries is 'Contains data of countries where user can provide its services';
+
 -- users_files
 drop table if exists users_files;
 create table users_files
 (
-    user_uuid UUID references users (uuid)
+    user_uuid uuid references users (uuid)
         on update cascade
         on delete cascade,
-    file_uuid UUID references file_description (uuid)
+    file_uuid uuid references file_description (uuid)
         on update cascade
-        on delete cascade
+        on delete cascade,
+    primary key (user_uuid, file_uuid)
 );
 
 comment on table users_files is 'Contains data of two "virtual columns": documents_photos and portfolio';
-
 
 drop table if exists orders cascade;
 create table if not exists orders

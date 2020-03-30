@@ -23,6 +23,7 @@ public class UserValidator implements IUserValidator {
     private final UserRepository userRepository;
     private final MessageSource messageSource;
     private final PasswordService passwordService;
+    private final String ANY_COUNTRY = "Any";
 
     @Value("${user.validation.password.length.min}")
     private int passwordMinLength;
@@ -137,6 +138,7 @@ public class UserValidator implements IUserValidator {
     public Map<String, Object> verifiedValidation(UserDetailed verifiedUser) {
         Map<String, Object> errors = new HashMap<>();
 
+        // If user legal status is verified but he does not mention the legal status, we must declare an error
         if (verifiedUser.isLegalStatusVerified() && verifiedUser.getLegalStatus() == null) {
             errors.put("verified.legalstatus", getMessageSource().getMessage("user.verified.legalstatus.verified.empty",
                     null, getLocale()));
@@ -328,4 +330,13 @@ public class UserValidator implements IUserValidator {
         return errors;
     }
 
+    @Override
+    public Map<String, Object> validateServiceCountries(UserDetailed user) {
+
+        if (user.isLegalStatusVerified()) {
+
+        }
+
+        return null;
+    }
 }

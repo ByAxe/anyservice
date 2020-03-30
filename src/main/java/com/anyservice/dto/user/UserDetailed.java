@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -28,9 +29,10 @@ public class UserDetailed extends UserBrief {
     private boolean isVerified;
     private boolean isLegalStatusVerified;
     private String password;
-    private String address;
-    private CountryEntity country;
+    private Map<String, String> addresses;
+    private CountryEntity defaultCountry;
     private FileDetailed profilePhoto;
     private List<FileDetailed> documents;
     private List<FileDetailed> portfolio;
+    private List<CountryEntity> listOfCountriesWhereServicesProvided;
 }

@@ -14,8 +14,8 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
-import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.CascadeType.REMOVE;
 import static javax.persistence.FetchType.LAZY;
 
@@ -61,7 +61,10 @@ public class UserEntity extends EntityWithUUID {
     private String role;
 
     private String description;
-    private String address;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    private Map<String, String> addresses;
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
@@ -71,7 +74,7 @@ public class UserEntity extends EntityWithUUID {
     @Column(columnDefinition = "jsonb", nullable = false)
     private Initials initials;
 
-    @ManyToOne(fetch = LAZY, cascade = ALL)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "country")
     private CountryEntity country;
 
@@ -85,4 +88,11 @@ public class UserEntity extends EntityWithUUID {
             inverseJoinColumns = @JoinColumn(name = "file_uuid")
     )
     private List<FileEntity> documents;
+
+    @ManyToMany(fetch = LAZY)
+    @JoinTable(name = "users_countries",
+            joinColumns = @JoinColumn(name = "user_uuid"),
+            inverseJoinColumns = @JoinColumn(name = "country_uuid")
+    )
+    private List<CountryEntity> countries;
 }

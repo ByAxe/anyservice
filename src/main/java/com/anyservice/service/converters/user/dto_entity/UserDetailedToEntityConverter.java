@@ -36,9 +36,10 @@ public class UserDetailedToEntityConverter implements Converter<UserDetailed, Us
                 .initials(source.getInitials())
                 .role(source.getRole() != null ? source.getRole().name() : null)
                 .state(source.getState() != null ? source.getState().name() : null)
-                .address(source.getAddress())
-                .country(source.getCountry())
+                .addresses(source.getAddresses())
+                .country(source.getDefaultCountry())
                 .photo(source.getProfilePhoto() != null ? fileConverter.convert(source.getProfilePhoto()) : null)
+                .countries(source.getListOfCountriesWhereServicesProvided())
                 .build();
 
         // Create overall list for all files

@@ -86,4 +86,14 @@ public interface IUserValidator extends IValidator<UserDetailed> {
      */
     Map<String, Object> nonVerifiedValidation(UserDetailed nonVerifiedUser);
 
+
+    /**
+     * Validation of countries list where services are available
+     *
+     * @param user user that will be validated
+     * @return storage for errors obtained during validation
+     */
+    Map<String, Object> validateServiceCountries(UserDetailed user);
+
+
 }
